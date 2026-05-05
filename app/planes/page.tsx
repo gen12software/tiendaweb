@@ -52,6 +52,7 @@ export default async function PlanesPage() {
               <PlanCard
                 key={plan.id}
                 plan={plan}
+                isCurrentPlan={isPlanActive && userPlanId === plan.id}
                 isActive={isPlanActive && userPlanId === plan.id}
                 expiresAt={userPlanId === plan.id ? userPlanExpiresAt : null}
                 hasSession={!!user}

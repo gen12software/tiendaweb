@@ -14,12 +14,13 @@ interface Plan {
 
 interface PlanCardProps {
   plan: Plan
+  isCurrentPlan?: boolean
   isActive: boolean
   expiresAt: string | null
   hasSession: boolean
 }
 
-export default function PlanCard({ plan, isActive, expiresAt, hasSession }: PlanCardProps) {
+export default function PlanCard({ plan, isCurrentPlan = false, isActive, expiresAt, hasSession }: PlanCardProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,13 +42,18 @@ export default function PlanCard({ plan, isActive, expiresAt, hasSession }: Plan
     }
   }
 
-  const expiresFormatted = expiresAt
-    ? new Date(expiresAt).toLocaleDateString('es-AR', {
+  const expiresDate = expiresAt ? new Date(expiresAt) : null
+  const expiresFormatted = expiresDate
+    ? expiresDate.toLocaleDateString('es-AR', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       })
     : null
+  const daysLeft = expiresDate
+    ? Math.ceil((expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null
+  const expiresSoon = isCurrentPlan && daysLeft !== null && daysLeft > 0 && daysLeft <= 7
 
   return (
     <div
@@ -55,11 +61,20 @@ export default function PlanCard({ plan, isActive, expiresAt, hasSession }: Plan
         plan.is_featured ? 'border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-200'
       }`}
     >
-      {plan.is_featured && (
+      {/* Badges — solo uno visible a la vez, prioridad: "Tu plan actual" > "Vence pronto" > "Más popular" */}
+      {isCurrentPlan ? (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-green-600 px-3 py-0.5 text-xs font-semibold text-white whitespace-nowrap">
+          Tu plan actual
+        </span>
+      ) : expiresSoon ? (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-yellow-400 px-3 py-0.5 text-xs font-semibold text-yellow-900 whitespace-nowrap">
+          Vence pronto
+        </span>
+      ) : plan.is_featured ? (
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-indigo-600 px-3 py-0.5 text-xs font-semibold text-white">
           Más popular
         </span>
-      )}
+      ) : null}
 
       <div className="mb-4">
         <h2 className="text-xl font-bold text-gray-900">{plan.name}</h2>
