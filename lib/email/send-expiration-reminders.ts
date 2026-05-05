@@ -50,23 +50,19 @@ export async function sendExpirationReminders(
     return { sent: 0, skipped: 0, failed: 0 }
   }
 
-  // Emails ya enviados hoy para este tipo
+  // Emails ya enviados hoy para este tipo (usa sent_date, columna date plain)
   const userIds = profiles.map((p) => p.id)
   const { data: alreadySent } = await supabaseAdmin
     .from('email_logs')
     .select('user_id')
     .eq('email_type', emailType)
-    .gte('sent_at', `${todayDate}T00:00:00Z`)
-    .lte('sent_at', `${todayDate}T23:59:59Z`)
+    .eq('sent_date', todayDate)
     .in('user_id', userIds)
 
   const alreadySentIds = new Set((alreadySent ?? []).map((r) => r.user_id))
 
-  // Emails de auth para los usuarios pendientes
-  const pendingIds = userIds.filter((id) => !alreadySentIds.has(id))
-
   let sent = 0
-  let skipped = alreadySentIds.size
+  const skipped = alreadySentIds.size
   let failed = 0
 
   for (const profile of profiles) {
@@ -115,7 +111,11 @@ export async function sendExpirationReminders(
       }
 
       // Registrar en email_logs para evitar reenvíos
-      await supabaseAdmin.from('email_logs').insert({ user_id: profile.id, email_type: emailType })
+      await supabaseAdmin.from('email_logs').insert({
+        user_id: profile.id,
+        email_type: emailType,
+        sent_date: todayDate,
+      })
 
       sent++
     } catch (err) {
@@ -123,9 +123,6 @@ export async function sendExpirationReminders(
       failed++
     }
   }
-
-  // Suprimir warning de variable no usada
-  void pendingIds
 
   return { sent, skipped, failed }
 }
