@@ -6,6 +6,10 @@ export interface SiteConfig {
   primary_color: string
   hero_title: string
   hero_description: string
+  contact_email: string
+  whatsapp_number: string
+  whatsapp_message: string
+  contact_schedule: string
 }
 
 const DEFAULTS: SiteConfig = {
@@ -14,6 +18,10 @@ const DEFAULTS: SiteConfig = {
   primary_color: '#4f46e5',
   hero_title: 'Bienvenido a nuestra plataforma',
   hero_description: 'Accedé a todo el contenido con un plan.',
+  contact_email: 'contacto@mitienda.com',
+  whatsapp_number: '',
+  whatsapp_message: 'Hola, me comunico desde el sitio web y quisiera hacer una consulta.',
+  contact_schedule: 'Lunes a viernes de 9 a 18 hs.',
 }
 
 export async function getSiteConfig(): Promise<SiteConfig> {

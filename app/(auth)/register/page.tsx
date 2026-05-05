@@ -7,11 +7,12 @@ import Link from 'next/link'
 
 const initialState = { error: '' }
 
-function validate(full_name: string, email: string, password: string, confirm: string) {
+function validate(full_name: string, email: string, password: string, confirm: string, terms: boolean) {
   if (!full_name.trim()) return 'El nombre es requerido'
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Ingresá un email válido'
   if (password.length < 8) return 'La contraseña debe tener al menos 8 caracteres'
   if (password !== confirm) return 'Las contraseñas no coinciden'
+  if (!terms) return 'Debés aceptar los Términos y Condiciones para continuar'
   return null
 }
 
@@ -25,8 +26,9 @@ export default function RegisterPage() {
     const email = (form.elements.namedItem('email') as HTMLInputElement).value
     const password = (form.elements.namedItem('password') as HTMLInputElement).value
     const confirm = (form.elements.namedItem('confirm_password') as HTMLInputElement).value
+    const terms = (form.elements.namedItem('terms') as HTMLInputElement).checked
 
-    const err = validate(full_name, email, password, confirm)
+    const err = validate(full_name, email, password, confirm, terms)
     if (err) {
       e.preventDefault()
       setClientError(err)
@@ -116,6 +118,25 @@ export default function RegisterPage() {
               className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               placeholder="Repetí tu contraseña"
             />
+          </div>
+
+          <div className="flex items-start gap-3">
+            <input
+              id="terms"
+              name="terms"
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <label htmlFor="terms" className="text-sm text-gray-600 leading-5">
+              Acepto los{' '}
+              <Link href="/terminos" target="_blank" className="text-indigo-600 hover:underline font-medium">
+                Términos y Condiciones
+              </Link>{' '}
+              y la{' '}
+              <Link href="/privacidad" target="_blank" className="text-indigo-600 hover:underline font-medium">
+                Política de Privacidad
+              </Link>
+            </label>
           </div>
 
           <button

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { MercadoPagoConfig, Payment } from 'mercadopago'
 import { createClient } from '@supabase/supabase-js'
+import { sendPaymentConfirmationEmail } from '@/lib/email/send-payment-confirmation'
 
 const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! })
 
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
       if (userId && planId) {
         const { data: plan } = await supabaseAdmin
           .from('plans')
-          .select('duration_days')
+          .select('duration_days, name, price')
           .eq('id', planId)
           .single()
 
@@ -66,6 +67,26 @@ export async function POST(request: NextRequest) {
             .from('profiles')
             .update({ plan_id: planId, plan_expires_at: expiresAt.toISOString() })
             .eq('id', userId)
+
+          // Enviar email de confirmación de pago (fire-and-forget)
+          const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('full_name')
+            .eq('id', userId)
+            .single()
+
+          const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId)
+
+          if (authUser?.user?.email) {
+            sendPaymentConfirmationEmail(
+              authUser.user.email,
+              profile?.full_name ?? '',
+              plan.name,
+              Number(plan.price),
+              expiresAt,
+              String(paymentId),
+            )
+          }
         }
       }
     } else if (status === 'rejected') {
