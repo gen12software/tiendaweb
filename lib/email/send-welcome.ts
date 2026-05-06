@@ -16,6 +16,7 @@ export async function sendWelcomeEmail(email: string, fullName: string): Promise
       }),
     )
 
+    if (!resend) { console.warn('[sendWelcomeEmail] Resend no disponible'); return }
     const { error } = await resend.emails.send({
       from: `${config.site_name} <${FROM_EMAIL}>`,
       to: email,

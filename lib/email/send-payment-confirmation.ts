@@ -28,6 +28,7 @@ export async function sendPaymentConfirmationEmail(
       }),
     )
 
+    if (!resend) { console.warn('[sendPaymentConfirmationEmail] Resend no disponible'); return }
     const { error } = await resend.emails.send({
       from: `${config.site_name} <${FROM_EMAIL}>`,
       to: email,

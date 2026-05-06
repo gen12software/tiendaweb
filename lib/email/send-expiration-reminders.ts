@@ -97,6 +97,7 @@ export async function sendExpirationReminders(
         ? `⚠️ Tu plan vence mañana — renovalo hoy`
         : `Tu plan vence en 7 días — renovalo antes de perder el acceso`
 
+      if (!resend) { console.warn('[sendExpirationReminders] Resend no disponible'); break }
       const { error: sendError } = await resend.emails.send({
         from: `${config.site_name} <${FROM_EMAIL}>`,
         to: authData.user.email,
