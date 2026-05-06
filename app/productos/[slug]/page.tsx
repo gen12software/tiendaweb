@@ -2,9 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { getSiteConfig } from '@/lib/site-config'
 import { Metadata } from 'next'
-import Image from 'next/image'
-import { Badge } from '@/components/ui/badge'
 import ProductDetail from '@/components/products/product-detail'
+import ProductGallery from '@/components/products/product-gallery'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -57,38 +56,7 @@ export default async function ProductoPage({ params }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Galería */}
-        <div className="space-y-3">
-          <div className="relative aspect-square rounded-xl overflow-hidden bg-muted">
-            {images[0] ? (
-              <Image
-                src={images[0].url}
-                alt={product.name}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                Sin imagen
-              </div>
-            )}
-            {hasDiscount && (
-              <Badge className="absolute top-3 left-3 text-white" style={{ backgroundColor: 'var(--color-accent)' }}>
-                -{discountPct}%
-              </Badge>
-            )}
-          </div>
-          {images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {images.slice(1).map((img: any) => (
-                <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
-                  <Image src={img.url} alt={product.name} fill className="object-cover" sizes="120px" />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ProductGallery images={images} productName={product.name} discountPct={discountPct} />
 
         {/* Datos del producto — sticky en desktop */}
         <div className="lg:sticky lg:top-24 lg:self-start space-y-5">

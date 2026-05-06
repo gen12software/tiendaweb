@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
         await supabaseAdmin
           .from('orders')
-          .update({ status: 'paid' })
+          .update({ status: 'nueva' })
           .eq('id', orderId)
 
         await supabaseAdmin

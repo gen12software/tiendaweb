@@ -1,21 +1,24 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import { getSiteConfig } from '@/lib/site-config'
 import Header from '@/components/layout/header'
 import Footer from '@/components/layout/footer'
+import ConditionalShell from '@/components/layout/conditional-shell'
 import WhatsAppButton from '@/components/shared/whatsapp-button'
 import { Toaster } from '@/components/ui/sonner'
 import CartProvider from '@/components/cart/cart-provider'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const inter = Inter({
+  variable: '--font-inter',
   subsets: ['latin'],
+  display: 'swap',
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: '--font-plus-jakarta',
   subsets: ['latin'],
+  display: 'swap',
 })
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,20 +43,41 @@ export default async function RootLayout({
     '--color-accent': config.color_accent,
     '--theme-background': config.color_background,
     '--theme-surface': config.color_surface,
+...(config.font_heading ? { '--font-dynamic-heading': `'${config.font_heading}', sans-serif` } : {}),
+    ...(config.font_body    ? { '--font-dynamic-body':    `'${config.font_body}', sans-serif` }    : {}),
   } as React.CSSProperties
+
+  // Build Google Fonts URL for dynamic fonts
+  const googleFonts = [config.font_heading, config.font_body]
+    .filter(Boolean)
+    .map(f => `family=${encodeURIComponent(f!)}:wght@400;500;600;700`)
+    .join('&')
+  const googleFontsUrl = googleFonts
+    ? `https://fonts.googleapis.com/css2?${googleFonts}&display=swap`
+    : null
 
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
+      className={`${inter.variable} ${plusJakarta.variable} h-full antialiased scroll-smooth`}
       data-scroll-behavior="smooth"
       style={themeVars}
     >
+      {googleFontsUrl && (
+        <head>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href={googleFontsUrl} rel="stylesheet" />
+        </head>
+      )}
       <body className="min-h-full flex flex-col">
         <CartProvider>
-          <Header config={config} />
-          <main className="flex-1">{children}</main>
-          <Footer config={config} />
+          <ConditionalShell
+            header={<Header config={config} />}
+            footer={<Footer config={config} />}
+          >
+            {children}
+          </ConditionalShell>
           <WhatsAppButton />
           <Toaster />
         </CartProvider>

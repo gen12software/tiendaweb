@@ -16,50 +16,53 @@ export default function MobileMenu({ user, categories }: Props) {
 
   return (
     <div className="md:hidden">
-      <button onClick={() => setOpen(true)} className="p-2 rounded-md hover:bg-muted" aria-label="Menú">
+      <button
+        onClick={() => setOpen(true)}
+        className="p-2 rounded-full hover:bg-black/5 transition-colors"
+        aria-label="Menú"
+      >
         <Menu className="w-5 h-5" />
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-72">
-          <SheetHeader>
-            <SheetTitle>Menú</SheetTitle>
+        <SheetContent side="left" className="w-80 p-0">
+          <SheetHeader className="px-6 pt-6 pb-4 border-b">
+            <SheetTitle className="font-heading text-left">Menú</SheetTitle>
           </SheetHeader>
-          <nav className="mt-6 flex flex-col gap-1">
-            <Link href="/productos" onClick={() => setOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted text-sm font-medium">
-              Todos los productos
+          <nav className="px-3 py-4 flex flex-col gap-0.5">
+            <Link href="/" onClick={() => setOpen(false)} className="px-3 py-3 rounded-xl hover:bg-muted text-sm font-semibold transition-colors">
+              Inicio
             </Link>
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/productos?categoria=${cat.slug}`}
-                onClick={() => setOpen(false)}
-                className="px-3 py-2 rounded-md hover:bg-muted text-sm text-muted-foreground"
-              >
-                {cat.name}
-              </Link>
-            ))}
-            <div className="my-3 border-t" />
+            <Link href="/productos" onClick={() => setOpen(false)} className="px-3 py-3 rounded-xl hover:bg-muted text-sm font-semibold transition-colors">
+              Productos
+            </Link>
+            <Link href="/quienes-somos" onClick={() => setOpen(false)} className="px-3 py-3 rounded-xl hover:bg-muted text-sm font-semibold transition-colors">
+              Quiénes Somos
+            </Link>
+            <Link href="/contacto" onClick={() => setOpen(false)} className="px-3 py-3 rounded-xl hover:bg-muted text-sm font-semibold transition-colors">
+              Contacto
+            </Link>
+            <div className="my-3 border-t mx-3" />
             {user ? (
               <>
-                <Link href="/cuenta/ordenes" onClick={() => setOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted text-sm">
+                <Link href="/cuenta/ordenes" onClick={() => setOpen(false)} className="px-3 py-2.5 rounded-xl hover:bg-muted text-sm transition-colors">
                   Mis órdenes
                 </Link>
-                <Link href="/cuenta/wishlist" onClick={() => setOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted text-sm">
+                <Link href="/cuenta/wishlist" onClick={() => setOpen(false)} className="px-3 py-2.5 rounded-xl hover:bg-muted text-sm transition-colors">
                   Wishlist
                 </Link>
               </>
             ) : (
               <>
-                <Link href="/login" onClick={() => setOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted text-sm">
+                <Link href="/login" onClick={() => setOpen(false)} className="px-3 py-2.5 rounded-xl hover:bg-muted text-sm transition-colors">
                   Iniciar sesión
                 </Link>
-                <Link href="/register" onClick={() => setOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted text-sm">
+                <Link href="/register" onClick={() => setOpen(false)} className="px-3 py-2.5 rounded-xl hover:bg-muted text-sm font-semibold transition-colors">
                   Registrarse
                 </Link>
               </>
             )}
-            <Link href="/mi-orden" onClick={() => setOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted text-sm text-muted-foreground">
+            <Link href="/mi-orden" onClick={() => setOpen(false)} className="px-3 py-2.5 rounded-xl hover:bg-muted text-sm text-muted-foreground transition-colors">
               Consultar mi orden
             </Link>
           </nav>

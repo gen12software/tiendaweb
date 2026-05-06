@@ -8,7 +8,14 @@ import { updateOrderAction } from './actions'
 import { OrderStatus } from '@/lib/types/store'
 import { toast } from 'sonner'
 
-const STATUSES: OrderStatus[] = ['payment_pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']
+const STATUSES: { value: OrderStatus; label: string }[] = [
+  { value: 'nueva',              label: 'Nueva' },
+  { value: 'en_preparacion',     label: 'En preparación' },
+  { value: 'enviado',            label: 'Enviado' },
+  { value: 'listo_para_retirar', label: 'Listo para retirar' },
+  { value: 'entregado',          label: 'Entregado' },
+  { value: 'cancelado',          label: 'Cancelado' },
+]
 
 interface Props {
   order: { id: string; status: OrderStatus; tracking_number: string | null; admin_notes: string | null }
@@ -36,7 +43,7 @@ export default function OrderAdminActions({ order }: Props) {
         <Label>Estado</Label>
         <select value={status} onChange={(e) => setStatus(e.target.value as OrderStatus)}
           className="w-full border rounded-lg px-3 py-2 text-sm">
-          {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+          {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
       </div>
 

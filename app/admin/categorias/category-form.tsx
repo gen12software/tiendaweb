@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { saveCategoryAction } from './actions'
+import { ImageUploader } from '@/components/ui/image-uploader'
 
 interface Category { id: string; name: string; image_url: string | null; sort_order: number }
 
@@ -22,9 +23,8 @@ export default function CategoryForm({ category }: { category?: Category }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">URL de imagen</label>
-        <input name="image_url" type="url" defaultValue={category?.image_url ?? ''}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none" />
+        <label className="block text-sm font-medium text-gray-700 mb-1">Imagen</label>
+        <ImageUploader name="image_url" folder="categorias" defaultValue={category?.image_url} label="imagen de categoría" />
       </div>
 
       <div>

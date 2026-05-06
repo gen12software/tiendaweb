@@ -33,6 +33,7 @@ export interface Product {
   is_active: boolean
   is_featured: boolean
   sort_order: number
+  stock: number
   created_at: string
   categories?: Pick<Category, 'id' | 'name' | 'slug'> | null
   product_images?: ProductImage[]
@@ -70,14 +71,12 @@ export interface OrderAddress {
 }
 
 export type OrderStatus =
-  | 'pending'
-  | 'payment_pending'
-  | 'paid'
-  | 'processing'
-  | 'shipped'
-  | 'delivered'
-  | 'cancelled'
-  | 'payment_approved_stock_error'
+  | 'nueva'
+  | 'en_preparacion'
+  | 'enviado'
+  | 'listo_para_retirar'
+  | 'entregado'
+  | 'cancelado'
 
 export interface Order {
   id: string

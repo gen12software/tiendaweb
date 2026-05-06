@@ -1,228 +1,263 @@
--- ============================================================
--- SEED: datos de prueba completos
--- Ejecutar en Supabase SQL Editor o con: supabase db reset --seed
+﻿-- ============================================================
+-- SEED: Gen12 Software Store
 -- ============================================================
 
--- ────────────────────────────────────────────────────────────
--- SITE CONFIG (upsert para no duplicar)
--- ────────────────────────────────────────────────────────────
-insert into public.site_config (key, value) values
-  ('site_name',              'TiendaDemo'),
-  ('logo_url',               ''),
-  ('primary_color',          '#4f46e5'),
-  ('color_secondary',        '#6366f1'),
-  ('color_accent',           '#f59e0b'),
-  ('color_background',       '#ffffff'),
-  ('color_surface',          '#f9fafb'),
-  ('font_heading',           ''),
-  ('font_body',              ''),
-  ('favicon_url',            ''),
-  ('social_instagram',       'https://instagram.com/tiendademo'),
-  ('social_facebook',        'https://facebook.com/tiendademo'),
-  ('social_tiktok',          ''),
+INSERT INTO site_config (key, value) VALUES
+  ('site_name',              'Gen12 Software'),
+  ('slogan',                 'Tecnologia que impulsa tu negocio'),
   ('currency_symbol',        '$'),
-  ('currency_locale',        'es-AR'),
-  ('free_shipping_threshold','5000'),
-  ('hero_title',             'Todo lo que necesitás, en un solo lugar'),
-  ('hero_description',       'Productos de calidad con envío a todo el país.'),
-  ('hero_image_url',         ''),
-  ('hero_cta_text',          'Ver productos'),
+  ('logo_url',               ''),
+  ('favicon_url',            ''),
+  ('primary_color',          '#6366f1'),
+  ('accent_color',           '#f59e0b'),
+  ('font_heading',           'Inter'),
+  ('font_body',              'Inter'),
+  ('hero_title',             'Soluciones de software para tu negocio'),
+  ('hero_subtitle',          'Licencias, cursos y herramientas para que tu empresa crezca con tecnologia de punta.'),
+  ('hero_cta_label',         'Ver productos'),
   ('hero_cta_url',           '/productos'),
-  ('home_show_featured',     'true'),
-  ('home_show_categories',   'true'),
-  ('home_show_cta',          'true'),
-  ('home_cta_title',         '¿Querés recibir ofertas?'),
-  ('home_cta_subtitle',      'Suscribite y recibí descuentos exclusivos cada semana.'),
-  ('home_cta_link',          '/productos'),
-  ('slogan',                 'Calidad que se nota'),
-  ('terms_url',              '/terminos'),
-  ('privacy_url',            '/privacidad'),
-  ('whatsapp_number',        '5491112345678'),
-  ('contact_email',          'contacto@tiendademo.com')
-on conflict (key) do update set value = excluded.value;
+  ('hero_bg_color',          '#0f0f1a'),
+  ('hero_image_url',         'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&q=80'),
+  ('contact_email',          'contacto@gen12software.com'),
+  ('contact_phone',          '+54 11 5555-1212'),
+  ('contact_address',        'Buenos Aires, Argentina'),
+  ('social_instagram',       'https://instagram.com/gen12software'),
+  ('social_facebook',        ''),
+  ('social_twitter',         'https://twitter.com/gen12software'),
+  ('social_whatsapp',        'https://wa.me/5491155551212'),
+  ('footer_text',            '2026 Gen12 Software. Todos los derechos reservados.'),
+  ('announcement_1',         'Nuevas licencias disponibles - hasta 30% OFF'),
+  ('announcement_2',         'Cursos de desarrollo web con certificado'),
+  ('announcement_3',         'Herramientas para devs: descuentos especiales'),
+  ('announcement_4',         'Soporte tecnico 24/7 para todos nuestros productos'),
+  ('announcement_5',         'Inscribite a nuestros cursos online ahora'),
+  ('announcement_6',         ''),
+  ('announcement_7',         ''),
+  ('announcement_8',         ''),
+  ('announcement_9',         ''),
+  ('announcement_10',        ''),
+  ('header_bg_color',        '#0f0f1a'),
+  ('header_text_color',      '#ffffff'),
+  ('announcement_bg_color',  '#6366f1'),
+  ('announcement_text_color','#ffffff'),
+  ('about_title',            'Somos Gen12 Software'),
+  ('about_subtitle',         'Construimos soluciones tecnologicas que transforman negocios'),
+  ('about_description',      'Gen12 Software nacio con una mision clara: democratizar el acceso a la tecnologia para empresas de todos los tamanios. Desde 2018, hemos ayudado a mas de 500 empresas en Argentina y Latinoamerica a digitalizar sus procesos, capacitar a sus equipos y crecer con herramientas de software de primera linea.
 
--- ────────────────────────────────────────────────────────────
--- PLANES (módulo suscripciones)
--- ────────────────────────────────────────────────────────────
-insert into public.plans (id, name, description, price, duration_days, features, is_active, is_featured) values
-  ('11111111-0000-0000-0000-000000000001', 'Básico',    'Acceso a contenido esencial',       2990, 30,  array['Acceso a 10 cursos', 'Soporte por email'],                           true, false),
-  ('11111111-0000-0000-0000-000000000002', 'Pro',       'Todo lo que necesitás para crecer', 5990, 30,  array['Acceso ilimitado', 'Soporte prioritario', 'Certificados'],           true, true),
-  ('11111111-0000-0000-0000-000000000003', 'Anual Pro', 'El mejor valor del año',           49990, 365, array['Todo Pro', 'Precio especial anual', 'Acceso anticipado a novedades'], true, false)
-on conflict (id) do nothing;
+Nuestro equipo esta formado por desarrolladores, disenadores y especialistas en tecnologia con mas de 10 anos de experiencia en el sector. Creemos que el software bien hecho es un multiplicador de negocio, no un gasto.'),
+  ('about_image_url',        'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80'),
+  ('about_pillar_1_icon',    'cohete'),
+  ('about_pillar_1_title',   'Innovacion constante'),
+  ('about_pillar_1_text',    'Nos mantenemos en la vanguardia tecnologica para ofrecerte siempre las mejores soluciones del mercado.'),
+  ('about_pillar_2_icon',    'apretón de manos'),
+  ('about_pillar_2_title',   'Compromiso real'),
+  ('about_pillar_2_text',    'No somos solo un proveedor: somos tu socio tecnologico. Tu exito es nuestro exito.'),
+  ('about_pillar_3_icon',    'escudo'),
+  ('about_pillar_3_title',   'Calidad garantizada'),
+  ('about_pillar_3_text',    'Todos nuestros productos y servicios pasan por rigurosos controles de calidad antes de llegar a tus manos.')
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
--- ────────────────────────────────────────────────────────────
--- CATEGORÍAS
--- ────────────────────────────────────────────────────────────
-insert into public.categories (id, name, slug, sort_order, is_active) values
-  ('22222222-0000-0000-0000-000000000001', 'Electrónica',    'electronica',    1, true),
-  ('22222222-0000-0000-0000-000000000002', 'Hogar',          'hogar',          2, true),
-  ('22222222-0000-0000-0000-000000000003', 'Indumentaria',   'indumentaria',   3, true),
-  ('22222222-0000-0000-0000-000000000004', 'Deportes',       'deportes',       4, true),
-  ('22222222-0000-0000-0000-000000000005', 'Alimentos',      'alimentos',      5, true)
-on conflict (id) do nothing;
+-- CATEGORIES
+INSERT INTO categories (id, name, slug, description, image_url, is_active, sort_order) VALUES
+  ('cat-lic', 'Licencias',        'licencias',       'Software con licencia oficial para tu empresa',    'https://images.unsplash.com/photo-1488229297570-58520851e868?w=600&q=80', true, 1),
+  ('cat-cur', 'Cursos',           'cursos',          'Formacion profesional online con certificado',     'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80', true, 2),
+  ('cat-dev', 'Herramientas Dev', 'herramientas-dev','Recursos y utilities para desarrolladores',        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=80', true, 3),
+  ('cat-acc', 'Accesorios Tech',  'accesorios-tech', 'Hardware y accesorios para tu setup de trabajo',  'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&q=80', true, 4),
+  ('cat-con', 'Consultoria',      'consultoria',     'Servicios de consultoria y auditoria tecnologica', 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80', true, 5)
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name, slug = EXCLUDED.slug, description = EXCLUDED.description,
+  image_url = EXCLUDED.image_url, is_active = EXCLUDED.is_active, sort_order = EXCLUDED.sort_order;
 
--- ────────────────────────────────────────────────────────────
--- PRODUCTOS
--- ────────────────────────────────────────────────────────────
-insert into public.products (id, name, slug, description, price, compare_at_price, category_id, is_active, is_featured, sort_order) values
-  ('33333333-0000-0000-0000-000000000001', 'Auriculares Bluetooth Pro',  'auriculares-bluetooth-pro',
-   'Auriculares inalámbricos con cancelación de ruido activa, 30hs de batería y micrófono integrado.',
-   12999, 18999, '22222222-0000-0000-0000-000000000001', true, true,  1),
+-- PRODUCTS
+INSERT INTO products (id, name, slug, description, price, compare_at_price, category_id, is_active, stock, sort_order, sku) VALUES
+  ('prod-ms365',  'Microsoft 365 Business',       'microsoft-365-business',
+   'Suite completa de productividad: Word, Excel, PowerPoint, Teams, OneDrive y mas. Licencia anual por usuario con soporte incluido.',
+   18500, 24000, 'cat-lic', true, 0, 1, 'LIC-MS365'),
+  ('prod-adobe',  'Adobe Creative Cloud',          'adobe-creative-cloud',
+   'Acceso a todas las apps de Adobe: Photoshop, Illustrator, Premiere, After Effects y mas. Ideal para equipos creativos.',
+   32000, 42000, 'cat-lic', true, 0, 2, 'LIC-ADOBE'),
+  ('prod-jetb',   'JetBrains All Products',        'jetbrains-all-products',
+   'Licencia para todas las IDEs de JetBrains: IntelliJ, WebStorm, PyCharm, DataGrip y mas. 1 anio, 1 usuario.',
+   28000, NULL,  'cat-lic', true, 0, 3, 'LIC-JB'),
+  ('prod-figma',  'Figma Professional',            'figma-professional',
+   'Disenio colaborativo en tiempo real. Plan Professional con proyectos ilimitados y componentes avanzados.',
+   12000, 15000, 'cat-lic', true, 0, 4, 'LIC-FIGMA'),
+  ('prod-gh',     'GitHub Copilot for Teams',      'github-copilot-teams',
+   'IA para desarrolladores integrada en tu editor. Sugerencias de codigo en tiempo real. Licencia anual equipo hasta 5 usuarios.',
+   22000, NULL,  'cat-lic', true, 0, 5, 'LIC-GHCP'),
+  ('prod-curweb', 'Curso Full Stack Web Dev',      'curso-full-stack-web',
+   'Aprende HTML, CSS, JavaScript, React, Node.js y PostgreSQL desde cero hasta nivel profesional. 120 horas de contenido + proyecto final.',
+   24900, 34900, 'cat-cur', true, 50, 1, 'CUR-FSWD'),
+  ('prod-curdata','Curso Data Science con Python', 'curso-data-science-python',
+   'Pandas, NumPy, Scikit-learn, visualizacion de datos y Machine Learning. 5 proyectos reales y certificado al finalizar.',
+   19900, 27900, 'cat-cur', true, 30, 2, 'CUR-DS'),
+  ('prod-curux',  'Curso UX/UI Design',            'curso-ux-ui-design',
+   'Disenio de interfaces, investigacion de usuarios, prototipado en Figma y principios de accesibilidad. 80 horas.',
+   17900, NULL,  'cat-cur', true, 25, 3, 'CUR-UXUI'),
+  ('prod-curdev', 'Curso DevOps y Cloud',          'curso-devops-cloud',
+   'Docker, Kubernetes, CI/CD con GitHub Actions, AWS y Azure. Para devs que quieren escalar sus aplicaciones.',
+   22900, 29900, 'cat-cur', true, 20, 4, 'CUR-DO'),
+  ('prod-cursec', 'Curso Ciberseguridad',          'curso-ciberseguridad',
+   'Seguridad ofensiva y defensiva, analisis de vulnerabilidades, CTF y buenas practicas para empresas.',
+   21900, NULL,  'cat-cur', true, 15, 5, 'CUR-SEC'),
+  ('prod-boil',   'Next.js SaaS Boilerplate',      'nextjs-saas-boilerplate',
+   'Starter kit completo para SaaS: auth, billing con Stripe, dashboard admin, multi-tenant, dark mode. TypeScript + Tailwind.',
+   15900, 22000, 'cat-dev', true, 999, 1, 'DEV-BOIL'),
+  ('prod-tmpl',   'Pack Templates UI Premium',     'pack-templates-ui-premium',
+   '50 templates de componentes React listos para produccion: landing pages, dashboards, formularios y mas.',
+   8900,  12000, 'cat-dev', true, 999, 2, 'DEV-TMPL'),
+  ('prod-api',    'API REST Starter Kit',           'api-rest-starter-kit',
+   'Boilerplate de API en Node.js + Express con JWT, rate limiting, Swagger, tests y deploy en Railway.',
+   9900,  NULL,  'cat-dev', true, 999, 3, 'DEV-API'),
+  ('prod-db',     'PostgreSQL Schema Designer',    'postgresql-schema-designer',
+   'Herramienta visual para diseniar y documentar esquemas de base de datos. Exporta a SQL, ERD y Markdown.',
+   6900,  9900,  'cat-dev', true, 999, 4, 'DEV-DB'),
+  ('prod-kbd',    'Teclado Mecanico Keychron K8',  'teclado-mecanico-keychron-k8',
+   'Teclado mecanico TKL inalambrico, switches Gateron G Pro, retroiluminacion RGB, compatible Mac/Windows.',
+   89000, 110000,'cat-acc', true, 0, 1, 'ACC-KBD'),
+  ('prod-mse',    'Mouse Logitech MX Master 3S',   'mouse-logitech-mx-master-3s',
+   'Mouse ergonomico de alta precision, silencioso, recargable, 7 botones programables, multi-dispositivo.',
+   62000, NULL,  'cat-acc', true, 12, 2, 'ACC-MSE'),
+  ('prod-mon',    'Monitor LG 27 4K UHD',          'monitor-lg-27-4k',
+   'Panel IPS 4K 3840x2160, 60Hz, sRGB 99%, USB-C con carga, ideal para disenio y desarrollo.',
+   380000,450000,'cat-acc', true, 4, 3, 'ACC-MON'),
+  ('prod-hub',    'Hub USB-C 7 en 1',              'hub-usb-c-7-en-1',
+   'Hub compacto con HDMI 4K, 3x USB-A, USB-C PD 100W, SD y microSD. Compatible MacBook y laptops modernas.',
+   18900, 24000, 'cat-acc', true, 20, 4, 'ACC-HUB'),
+  ('prod-aud',    'Auditoria Tecnologica',          'auditoria-tecnologica',
+   'Analisis completo del stack tecnologico de tu empresa: infraestructura, procesos, seguridad y costos. Informe ejecutivo.',
+   120000,NULL,  'cat-con', true, 5, 1, 'CON-AUD'),
+  ('prod-impl',   'Implementacion de Software',    'implementacion-de-software',
+   'Acompaniamiento en la implementacion de nuevas herramientas: migracion de datos, capacitacion del equipo y go-live.',
+   180000,220000,'cat-con', true, 3, 2, 'CON-IMPL'),
+  ('prod-mento',  'Mentoring Tech para CTOs',      'mentoring-tech-ctos',
+   'Programa de 3 meses de mentoring individual para lideres tecnologicos: roadmap, arquitectura, gestion de equipos.',
+   95000, NULL,  'cat-con', true, 5, 3, 'CON-MEN'),
+  ('prod-sprnt',  'Sprint de Innovacion',           'sprint-de-innovacion',
+   'Taller intensivo de 2 dias con tu equipo para identificar oportunidades, prototipar soluciones y definir hoja de ruta.',
+   75000, 90000, 'cat-con', true, 6, 4, 'CON-SPRT')
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name, slug = EXCLUDED.slug, description = EXCLUDED.description,
+  price = EXCLUDED.price, compare_at_price = EXCLUDED.compare_at_price,
+  category_id = EXCLUDED.category_id, is_active = EXCLUDED.is_active,
+  stock = EXCLUDED.stock, sort_order = EXCLUDED.sort_order, sku = EXCLUDED.sku;
 
-  ('33333333-0000-0000-0000-000000000002', 'Smartwatch Serie 5',         'smartwatch-serie-5',
-   'Reloj inteligente con monitor cardíaco, GPS, notificaciones y resistencia al agua.',
-   24990, null,  '22222222-0000-0000-0000-000000000001', true, true,  2),
+-- PRODUCT VARIANTS
+INSERT INTO product_variants (id, product_id, name, options, price_modifier, stock, sku) VALUES
+  ('var-ms365-1',  'prod-ms365',  '1 usuario',      '{"usuarios": "1"}',               0,      99, 'LIC-MS365-1'),
+  ('var-ms365-5',  'prod-ms365',  '5 usuarios',     '{"usuarios": "5"}',               55000,  50, 'LIC-MS365-5'),
+  ('var-ms365-10', 'prod-ms365',  '10 usuarios',    '{"usuarios": "10"}',              120000, 20, 'LIC-MS365-10'),
+  ('var-adobe-1',  'prod-adobe',  'Individual',     '{"plan": "Individual"}',          0,      99, 'LIC-ADOBE-IND'),
+  ('var-adobe-t',  'prod-adobe',  'Equipo (5)',     '{"plan": "Teams 5"}',             90000,  30, 'LIC-ADOBE-T5'),
+  ('var-jb-1',     'prod-jetb',   '1 anio',         '{"periodo": "1 anio"}',           0,      99, 'LIC-JB-1'),
+  ('var-jb-3',     'prod-jetb',   '3 anios',        '{"periodo": "3 anios"}',          40000,  30, 'LIC-JB-3'),
+  ('var-fig-1',    'prod-figma',  'Mensual',        '{"facturacion": "mensual"}',      0,      99, 'LIC-FIG-M'),
+  ('var-fig-y',    'prod-figma',  'Anual (-20%)',   '{"facturacion": "anual"}',        -2000,  99, 'LIC-FIG-Y'),
+  ('var-gh-m',     'prod-gh',     'Mensual',        '{"facturacion": "mensual"}',      0,      99, 'LIC-GH-M'),
+  ('var-gh-y',     'prod-gh',     'Anual (-15%)',   '{"facturacion": "anual"}',        -3000,  99, 'LIC-GH-Y'),
+  ('var-cw-bas',   'prod-curweb', 'Sin mentoring',  '{"modalidad": "autogestivo"}',    0,      50, 'CUR-FSWD-B'),
+  ('var-cw-men',   'prod-curweb', 'Con mentoring',  '{"modalidad": "mentoring"}',      15000,  10, 'CUR-FSWD-M'),
+  ('var-cd-bas',   'prod-curdata','Sin mentoring',  '{"modalidad": "autogestivo"}',    0,      30, 'CUR-DS-B'),
+  ('var-cd-men',   'prod-curdata','Con mentoring',  '{"modalidad": "mentoring"}',      12000,  8,  'CUR-DS-M'),
+  ('var-cux-bas',  'prod-curux',  'Sin mentoring',  '{"modalidad": "autogestivo"}',    0,      25, 'CUR-UX-B'),
+  ('var-cux-men',  'prod-curux',  'Con mentoring',  '{"modalidad": "mentoring"}',      10000,  5,  'CUR-UX-M'),
+  ('var-cdo-bas',  'prod-curdev', 'Sin mentoring',  '{"modalidad": "autogestivo"}',    0,      20, 'CUR-DO-B'),
+  ('var-cdo-men',  'prod-curdev', 'Con mentoring',  '{"modalidad": "mentoring"}',      12000,  5,  'CUR-DO-M'),
+  ('var-cs-bas',   'prod-cursec', 'Sin mentoring',  '{"modalidad": "autogestivo"}',    0,      15, 'CUR-SEC-B'),
+  ('var-cs-men',   'prod-cursec', 'Con mentoring',  '{"modalidad": "mentoring"}',      11000,  3,  'CUR-SEC-M'),
+  ('var-kbd-wh',   'prod-kbd',    'Blanco',         '{"color": "Blanco"}',             0,      4,  'ACC-KBD-W'),
+  ('var-kbd-gr',   'prod-kbd',    'Gris',           '{"color": "Gris"}',               0,      3,  'ACC-KBD-G'),
+  ('var-kbd-bk',   'prod-kbd',    'Negro',          '{"color": "Negro"}',              0,      1,  'ACC-KBD-B'),
+  ('var-hub-1',    'prod-hub',    '1 unidad',       '{"cantidad": "1"}',               0,      15, 'ACC-HUB-1'),
+  ('var-hub-2',    'prod-hub',    'Pack x2',        '{"cantidad": "2"}',               -2000,  5,  'ACC-HUB-2'),
+  ('var-aud-bas',  'prod-aud',    'Basica (1 dia)', '{"duracion": "1 dia"}',           0,      3,  'CON-AUD-B'),
+  ('var-aud-pro',  'prod-aud',    'Pro (3 dias)',   '{"duracion": "3 dias"}',          80000,  2,  'CON-AUD-P'),
+  ('var-impl-s',   'prod-impl',   'Starter',        '{"alcance": "starter"}',          0,      2,  'CON-IMPL-S'),
+  ('var-impl-p',   'prod-impl',   'Pro',            '{"alcance": "pro"}',              80000,  1,  'CON-IMPL-P')
+ON CONFLICT (id) DO UPDATE SET
+  product_id = EXCLUDED.product_id, name = EXCLUDED.name, options = EXCLUDED.options,
+  price_modifier = EXCLUDED.price_modifier, stock = EXCLUDED.stock, sku = EXCLUDED.sku;
 
-  ('33333333-0000-0000-0000-000000000003', 'Cargador USB-C 65W',         'cargador-usbc-65w',
-   'Cargador rápido compatible con notebooks, tablets y celulares. Cable incluido.',
-   3490,  null,  '22222222-0000-0000-0000-000000000001', true, false, 3),
+-- PRODUCT IMAGES
+INSERT INTO product_images (product_id, url, sort_order) VALUES
+  ('prod-ms365',  'https://images.unsplash.com/photo-1633419461186-7d40a38105ec?w=600&q=80', 0),
+  ('prod-adobe',  'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600&q=80', 0),
+  ('prod-jetb',   'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=80',    0),
+  ('prod-figma',  'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80',    0),
+  ('prod-gh',     'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=600&q=80', 0),
+  ('prod-curweb', 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80', 0),
+  ('prod-curdata','https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80',    0),
+  ('prod-curux',  'https://images.unsplash.com/photo-1559028012-481c04fa702d?w=600&q=80',    0),
+  ('prod-curdev', 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=600&q=80', 0),
+  ('prod-cursec', 'https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=600&q=80', 0),
+  ('prod-boil',   'https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?w=600&q=80', 0),
+  ('prod-tmpl',   'https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&q=80', 0),
+  ('prod-api',    'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80',    0),
+  ('prod-db',     'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=600&q=80',    0),
+  ('prod-kbd',    'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&q=80', 0),
+  ('prod-kbd',    'https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&q=80', 1),
+  ('prod-mse',    'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&q=80', 0),
+  ('prod-mon',    'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&q=80', 0),
+  ('prod-hub',    'https://images.unsplash.com/photo-1625480860249-be231a1746bb?w=600&q=80', 0),
+  ('prod-aud',    'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80', 0),
+  ('prod-impl',   'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80', 0),
+  ('prod-mento',  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80', 0),
+  ('prod-sprnt',  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80',    0);
 
-  ('33333333-0000-0000-0000-000000000004', 'Juego de Sábanas 200 Hilos', 'sabanas-200-hilos',
-   'Set de sábanas doble 200 hilos, 100% algodón. Incluye bajera, encimera y dos fundas.',
-   5990,  7500,  '22222222-0000-0000-0000-000000000002', true, true,  1),
+-- ORDERS (18 varied statuses and dates)
+INSERT INTO orders (id, customer_name, customer_email, customer_phone, shipping_address, status, total, notes, created_at) VALUES
+  ('ord-001','Martina Lopez',     'martina.lopez@gmail.com',    '+54 11 6234-8821','{"street":"Av. Corrientes 1500","city":"CABA","province":"Buenos Aires","zip":"1043"}',     'entregado',          132400,NULL,                           NOW() - INTERVAL '44 days'),
+  ('ord-002','Carlos Bermudez',   'cbermudez@empresa.com',      '+54 11 5555-3301','{"street":"Lavalle 750","city":"Rosario","province":"Santa Fe","zip":"2000"}',              'entregado',          42000, NULL,                           NOW() - INTERVAL '41 days'),
+  ('ord-003','Sofia Ramirez',     'sofia.ram@outlook.com',      '+54 351 412-0099','{"street":"25 de Mayo 300","city":"Cordoba","province":"Cordoba","zip":"5000"}',            'entregado',          260000,NULL,                           NOW() - INTERVAL '38 days'),
+  ('ord-004','Diego Fernandez',   'diegof@hotmail.com',         '+54 11 7788-4412','{"street":"Rivadavia 2200","city":"CABA","province":"Buenos Aires","zip":"1034"}',          'entregado',          24900, NULL,                           NOW() - INTERVAL '35 days'),
+  ('ord-005','Valentina Torres',  'valen.torres@gmail.com',     '+54 341 520-1199','{"street":"San Martin 890","city":"Rosario","province":"Santa Fe","zip":"2000"}',          'cancelado',          89000, 'Cliente cancelo por duplicado',NOW() - INTERVAL '33 days'),
+  ('ord-006','Rodrigo Sosa',      'rsosa@tecnogroup.com',       '+54 11 4521-8833','{"street":"Florida 890","city":"CABA","province":"Buenos Aires","zip":"1005"}',            'entregado',          448000,NULL,                           NOW() - INTERVAL '30 days'),
+  ('ord-007','Luciana Gomez',     'lu.gomez@studio.com',        '+54 264 430-7766','{"street":"Mendoza 420","city":"San Juan","province":"San Juan","zip":"5400"}',            'entregado',          25700, NULL,                           NOW() - INTERVAL '27 days'),
+  ('ord-008','Hernan Perez',      'hernan.p@devshop.io',        '+54 11 3388-9901','{"street":"Pueyrredon 1100","city":"CABA","province":"Buenos Aires","zip":"1118"}',        'entregado',          120000,NULL,                           NOW() - INTERVAL '24 days'),
+  ('ord-009','Natalia Vidal',     'nvidal@consultora.com.ar',   '+54 11 5566-2277','{"street":"Belgrano 345","city":"La Plata","province":"Buenos Aires","zip":"1900"}',       'cancelado',          75000, 'Sin respuesta del cliente',   NOW() - INTERVAL '22 days'),
+  ('ord-010','Ezequiel Morales',  'eze.morales@freelance.dev',  '+54 11 9988-1234','{"street":"Tucuman 580","city":"CABA","province":"Buenos Aires","zip":"1049"}',           'entregado',          31000, NULL,                           NOW() - INTERVAL '19 days'),
+  ('ord-011','Camila Rios',       'camila.rios@gmail.com',      '+54 381 600-4411','{"street":"9 de Julio 775","city":"Tucuman","province":"Tucuman","zip":"4000"}',           'enviado',            34900, NULL,                           NOW() - INTERVAL '14 days'),
+  ('ord-012','Agustin Blanco',    'agusblanco@icloud.com',      '+54 11 2244-6688','{"street":"Callao 1800","city":"CABA","province":"Buenos Aires","zip":"1024"}',           'enviado',            55700, NULL,                           NOW() - INTERVAL '12 days'),
+  ('ord-013','Florencia Munoz',   'flor.munoz@disenio.ar',      '+54 261 700-3322','{"street":"Aristides 200","city":"Mendoza","province":"Mendoza","zip":"5500"}',           'en_preparacion',     17900, NULL,                           NOW() - INTERVAL '9 days'),
+  ('ord-014','Tomas Castro',      'tomas.c@devops.io',          '+54 11 6677-8899','{"street":"Av. Santa Fe 3300","city":"CABA","province":"Buenos Aires","zip":"1425"}',     'en_preparacion',     190900,NULL,                           NOW() - INTERVAL '7 days'),
+  ('ord-015','Ines Molina',       'ines.molina@empresa.net',    '+54 223 550-4433','{"street":"San Luis 1200","city":"Mar del Plata","province":"Buenos Aires","zip":"7600"}','listo_para_retirar', 95000, NULL,                           NOW() - INTERVAL '5 days'),
+  ('ord-016','Sebastian Nunez',   'seba.nunez@startup.co',      '+54 11 8811-5522','{"street":"Av. Cabildo 2100","city":"CABA","province":"Buenos Aires","zip":"1428"}',      'listo_para_retirar', 469000,NULL,                           NOW() - INTERVAL '3 days'),
+  ('ord-017','Antonella Ferreira','toni.ferreira@outlook.com',  '+54 11 3344-7711','{"street":"Hipolito Yrigoyen 980","city":"CABA","province":"Buenos Aires","zip":"1086"}', 'nueva',              24800, NULL,                           NOW() - INTERVAL '18 hours'),
+  ('ord-018','Maximiliano Ortiz', 'max.ortiz@digitalagency.ar', '+54 341 488-0099','{"street":"Laprida 510","city":"Rosario","province":"Santa Fe","zip":"2000"}',            'nueva',              120000,NULL,                           NOW() - INTERVAL '30 minutes')
+ON CONFLICT (id) DO UPDATE SET
+  customer_name = EXCLUDED.customer_name, status = EXCLUDED.status,
+  total = EXCLUDED.total, created_at = EXCLUDED.created_at;
 
-  ('33333333-0000-0000-0000-000000000005', 'Sartén Antiadherente 28cm',  'sarten-antiadherente-28cm',
-   'Sartén de aluminio con recubrimiento antiadherente reforzado, apta para todo tipo de fuego.',
-   4290,  null,  '22222222-0000-0000-0000-000000000002', true, false, 2),
-
-  ('33333333-0000-0000-0000-000000000006', 'Remera Oversize Algodón',    'remera-oversize-algodon',
-   'Remera de algodón peinado 240gr, corte oversize. Disponible en varios colores y talles.',
-   2990,  null,  '22222222-0000-0000-0000-000000000003', true, false, 1),
-
-  ('33333333-0000-0000-0000-000000000007', 'Zapatillas Running Air',     'zapatillas-running-air',
-   'Zapatillas de running con suela de goma EVA, plantilla ergonómica y upper de mesh transpirable.',
-   18500, 22000, '22222222-0000-0000-0000-000000000004', true, true,  1),
-
-  ('33333333-0000-0000-0000-000000000008', 'Proteína Whey 1kg',          'proteina-whey-1kg',
-   'Proteína de suero de leche concentrada, 24g de proteína por porción. Sabor chocolate.',
-   8990,  null,  '22222222-0000-0000-0000-000000000005', true, false, 1)
-on conflict (id) do nothing;
-
--- ────────────────────────────────────────────────────────────
--- VARIANTES DE PRODUCTOS
--- ────────────────────────────────────────────────────────────
-
--- Auriculares: colores
-insert into public.product_variants (id, product_id, name, options, price_modifier, stock, sku) values
-  ('44444444-0000-0000-0000-000000000001', '33333333-0000-0000-0000-000000000001', 'Negro',  '{"color":"Negro"}',  0,    15, 'AUR-BLU-NEG'),
-  ('44444444-0000-0000-0000-000000000002', '33333333-0000-0000-0000-000000000001', 'Blanco', '{"color":"Blanco"}', 0,    8,  'AUR-BLU-BLA'),
-  ('44444444-0000-0000-0000-000000000003', '33333333-0000-0000-0000-000000000001', 'Azul',   '{"color":"Azul"}',   500,  5,  'AUR-BLU-AZU')
-on conflict (id) do nothing;
-
--- Remera: talles
-insert into public.product_variants (id, product_id, name, options, price_modifier, stock, sku) values
-  ('44444444-0000-0000-0000-000000000010', '33333333-0000-0000-0000-000000000006', 'S',  '{"talle":"S"}',  0, 20, 'REM-OVR-S'),
-  ('44444444-0000-0000-0000-000000000011', '33333333-0000-0000-0000-000000000006', 'M',  '{"talle":"M"}',  0, 25, 'REM-OVR-M'),
-  ('44444444-0000-0000-0000-000000000012', '33333333-0000-0000-0000-000000000006', 'L',  '{"talle":"L"}',  0, 18, 'REM-OVR-L'),
-  ('44444444-0000-0000-0000-000000000013', '33333333-0000-0000-0000-000000000006', 'XL', '{"talle":"XL"}', 0, 10, 'REM-OVR-XL')
-on conflict (id) do nothing;
-
--- Zapatillas: talles
-insert into public.product_variants (id, product_id, name, options, price_modifier, stock, sku) values
-  ('44444444-0000-0000-0000-000000000020', '33333333-0000-0000-0000-000000000007', '39', '{"talle":"39"}', 0, 5,  'ZAP-RUN-39'),
-  ('44444444-0000-0000-0000-000000000021', '33333333-0000-0000-0000-000000000007', '40', '{"talle":"40"}', 0, 8,  'ZAP-RUN-40'),
-  ('44444444-0000-0000-0000-000000000022', '33333333-0000-0000-0000-000000000007', '41', '{"talle":"41"}', 0, 10, 'ZAP-RUN-41'),
-  ('44444444-0000-0000-0000-000000000023', '33333333-0000-0000-0000-000000000007', '42', '{"talle":"42"}', 0, 6,  'ZAP-RUN-42'),
-  ('44444444-0000-0000-0000-000000000024', '33333333-0000-0000-0000-000000000007', '43', '{"talle":"43"}', 0, 3,  'ZAP-RUN-43')
-on conflict (id) do nothing;
-
--- Smartwatch, sartén, proteína, cargador, sábanas: sin variantes → stock directo con una variante "Único"
-insert into public.product_variants (id, product_id, name, options, price_modifier, stock, sku) values
-  ('44444444-0000-0000-0000-000000000030', '33333333-0000-0000-0000-000000000002', 'Único', '{}', 0, 12, 'WATCH-S5'),
-  ('44444444-0000-0000-0000-000000000031', '33333333-0000-0000-0000-000000000003', 'Único', '{}', 0, 30, 'CARG-65W'),
-  ('44444444-0000-0000-0000-000000000032', '33333333-0000-0000-0000-000000000004', 'Único', '{}', 0, 20, 'SAB-200H'),
-  ('44444444-0000-0000-0000-000000000033', '33333333-0000-0000-0000-000000000005', 'Único', '{}', 0, 15, 'SART-28'),
-  ('44444444-0000-0000-0000-000000000034', '33333333-0000-0000-0000-000000000008', 'Único', '{}', 0, 40, 'PROT-1KG')
-on conflict (id) do nothing;
-
--- ────────────────────────────────────────────────────────────
--- MÉTODOS DE ENVÍO
--- ────────────────────────────────────────────────────────────
-insert into public.shipping_methods (id, name, price, estimated_days, is_active) values
-  ('55555555-0000-0000-0000-000000000001', 'Envío estándar',     1500, 5,  true),
-  ('55555555-0000-0000-0000-000000000002', 'Envío express',      2990, 2,  true),
-  ('55555555-0000-0000-0000-000000000003', 'Retiro en sucursal', 0,    null, true)
-on conflict (id) do nothing;
-
--- ────────────────────────────────────────────────────────────
--- ÓRDENES DE PRUEBA
--- ────────────────────────────────────────────────────────────
-insert into public.orders (id, number, status, email, subtotal, shipping_total, total, shipping_address, shipping_method_id, public_token) values
-  ('66666666-0000-0000-0000-000000000001',
-   'ORD-000001', 'paid',
-   'cliente1@ejemplo.com',
-   12999, 1500, 14499,
-   '{"full_name":"Ana García","email":"cliente1@ejemplo.com","phone":"1123456789","street":"Av. Corrientes 1234","city":"CABA","state":"Buenos Aires","postal_code":"1043","country":"Argentina"}',
-   '55555555-0000-0000-0000-000000000001',
-   'token-demo-001'),
-
-  ('66666666-0000-0000-0000-000000000002',
-   'ORD-000002', 'processing',
-   'cliente2@ejemplo.com',
-   27980, 0, 27980,
-   '{"full_name":"Carlos Martínez","email":"cliente2@ejemplo.com","phone":"1134567890","street":"Belgrano 567","city":"Rosario","state":"Santa Fe","postal_code":"2000","country":"Argentina"}',
-   '55555555-0000-0000-0000-000000000003',
-   'token-demo-002'),
-
-  ('66666666-0000-0000-0000-000000000003',
-   'ORD-000003', 'payment_pending',
-   'cliente3@ejemplo.com',
-   8990, 1500, 10490,
-   '{"full_name":"Laura López","email":"cliente3@ejemplo.com","phone":"1145678901","street":"San Martín 890","city":"Córdoba","state":"Córdoba","postal_code":"5000","country":"Argentina"}',
-   '55555555-0000-0000-0000-000000000001',
-   'token-demo-003'),
-
-  ('66666666-0000-0000-0000-000000000004',
-   'ORD-000004', 'shipped',
-   'cliente4@ejemplo.com',
-   18500, 2990, 21490,
-   '{"full_name":"Martín Rodríguez","email":"cliente4@ejemplo.com","phone":"1156789012","street":"Rivadavia 321","city":"Mendoza","state":"Mendoza","postal_code":"5500","country":"Argentina"}',
-   '55555555-0000-0000-0000-000000000002',
-   'token-demo-004'),
-
-  ('66666666-0000-0000-0000-000000000005',
-   'ORD-000005', 'cancelled',
-   'cliente5@ejemplo.com',
-   5990, 1500, 7490,
-   '{"full_name":"Sofía Díaz","email":"cliente5@ejemplo.com","phone":"1167890123","street":"Mitre 456","city":"Mar del Plata","state":"Buenos Aires","postal_code":"7600","country":"Argentina"}',
-   '55555555-0000-0000-0000-000000000001',
-   'token-demo-005')
-on conflict (id) do nothing;
-
--- ────────────────────────────────────────────────────────────
 -- ORDER ITEMS
--- ────────────────────────────────────────────────────────────
-insert into public.order_items (order_id, product_id, variant_id, quantity, unit_price, total_price, snapshot) values
-  ('66666666-0000-0000-0000-000000000001', '33333333-0000-0000-0000-000000000001', '44444444-0000-0000-0000-000000000001',
-   1, 12999, 12999, '{"name":"Auriculares Bluetooth Pro","variant_name":"Negro"}'),
-
-  ('66666666-0000-0000-0000-000000000002', '33333333-0000-0000-0000-000000000004', '44444444-0000-0000-0000-000000000032',
-   1, 5990, 5990, '{"name":"Juego de Sábanas 200 Hilos","variant_name":"Único"}'),
-  ('66666666-0000-0000-0000-000000000002', '33333333-0000-0000-0000-000000000006', '44444444-0000-0000-0000-000000000011',
-   2, 2990, 5980, '{"name":"Remera Oversize Algodón","variant_name":"M"}'),
-  ('66666666-0000-0000-0000-000000000002', '33333333-0000-0000-0000-000000000005', '44444444-0000-0000-0000-000000000033',
-   1, 4290, 4290, '{"name":"Sartén Antiadherente 28cm","variant_name":"Único"}'),
-  ('66666666-0000-0000-0000-000000000002', '33333333-0000-0000-0000-000000000003', '44444444-0000-0000-0000-000000000031',
-   1, 3490, 3490, '{"name":"Cargador USB-C 65W","variant_name":"Único"}'),
-  ('66666666-0000-0000-0000-000000000002', '33333333-0000-0000-0000-000000000002', '44444444-0000-0000-0000-000000000030',
-   1, 4230, 4230, '{"name":"Smartwatch Serie 5","variant_name":"Único"}'),
-
-  ('66666666-0000-0000-0000-000000000003', '33333333-0000-0000-0000-000000000008', '44444444-0000-0000-0000-000000000034',
-   1, 8990, 8990, '{"name":"Proteína Whey 1kg","variant_name":"Único"}'),
-
-  ('66666666-0000-0000-0000-000000000004', '33333333-0000-0000-0000-000000000007', '44444444-0000-0000-0000-000000000022',
-   1, 18500, 18500, '{"name":"Zapatillas Running Air","variant_name":"41"}'),
-
-  ('66666666-0000-0000-0000-000000000005', '33333333-0000-0000-0000-000000000004', '44444444-0000-0000-0000-000000000032',
-   1, 5990, 5990, '{"name":"Juego de Sábanas 200 Hilos","variant_name":"Único"}');
-
--- ────────────────────────────────────────────────────────────
--- CONTENIDO (módulo suscripciones)
--- ────────────────────────────────────────────────────────────
-insert into public.content (id, title, description, category, duration_minutes, sort_order, is_active) values
-  ('77777777-0000-0000-0000-000000000001', 'Introducción al módulo',       'Primeros pasos y configuración inicial.',         'Básico',     10, 1, true),
-  ('77777777-0000-0000-0000-000000000002', 'Conceptos avanzados',          'Approfundización en los temas del módulo.',       'Avanzado',   25, 2, true),
-  ('77777777-0000-0000-0000-000000000003', 'Casos de uso reales',          'Ejemplos prácticos aplicados a proyectos.',       'Avanzado',   40, 3, true),
-  ('77777777-0000-0000-0000-000000000004', 'Optimización y performance',   'Técnicas para mejorar el rendimiento.',           'Pro',        35, 4, true),
-  ('77777777-0000-0000-0000-000000000005', 'Integración con APIs externas','Cómo conectar servicios de terceros.',            'Pro',        30, 5, true)
-on conflict (id) do nothing;
+INSERT INTO order_items (order_id, product_id, variant_id, quantity, unit_price, product_name, variant_name) VALUES
+  ('ord-001','prod-ms365',  'var-ms365-5',  1, 73500,  'Microsoft 365 Business',       '5 usuarios'),
+  ('ord-001','prod-curweb', 'var-cw-men',   1, 39900,  'Curso Full Stack Web Dev',     'Con mentoring'),
+  ('ord-001','prod-hub',    'var-hub-1',    1, 18900,  'Hub USB-C 7 en 1',             '1 unidad'),
+  ('ord-002','prod-adobe',  'var-adobe-1',  1, 32000,  'Adobe Creative Cloud',          'Individual'),
+  ('ord-002','prod-figma',  'var-fig-y',    1, 10000,  'Figma Professional',            'Anual (-20%)'),
+  ('ord-003','prod-impl',   'var-impl-p',   1, 260000, 'Implementacion de Software',    'Pro'),
+  ('ord-004','prod-curweb', 'var-cw-bas',   1, 24900,  'Curso Full Stack Web Dev',     'Sin mentoring'),
+  ('ord-005','prod-kbd',    'var-kbd-wh',   1, 89000,  'Teclado Mecanico Keychron K8', 'Blanco'),
+  ('ord-006','prod-mon',    NULL,           1, 380000, 'Monitor LG 27 4K UHD',          NULL),
+  ('ord-006','prod-jetb',   'var-jb-3',     1, 68000,  'JetBrains All Products',       '3 anios'),
+  ('ord-007','prod-tmpl',   NULL,           1, 8900,   'Pack Templates UI Premium',     NULL),
+  ('ord-007','prod-api',    NULL,           1, 9900,   'API REST Starter Kit',          NULL),
+  ('ord-007','prod-db',     NULL,           1, 6900,   'PostgreSQL Schema Designer',    NULL),
+  ('ord-008','prod-aud',    'var-aud-bas',  1, 120000, 'Auditoria Tecnologica',         'Basica (1 dia)'),
+  ('ord-009','prod-sprnt',  NULL,           1, 75000,  'Sprint de Innovacion',          NULL),
+  ('ord-010','prod-gh',     'var-gh-y',     1, 19000,  'GitHub Copilot for Teams',     'Anual (-15%)'),
+  ('ord-010','prod-figma',  'var-fig-1',    1, 12000,  'Figma Professional',           'Mensual'),
+  ('ord-011','prod-curdev', 'var-cdo-men',  1, 34900,  'Curso DevOps y Cloud',         'Con mentoring'),
+  ('ord-012','prod-boil',   NULL,           1, 15900,  'Next.js SaaS Boilerplate',      NULL),
+  ('ord-012','prod-curdata','var-cd-bas',   1, 19900,  'Curso Data Science con Python', 'Sin mentoring'),
+  ('ord-012','prod-hub',    'var-hub-2',    1, 16900,  'Hub USB-C 7 en 1',             'Pack x2'),
+  ('ord-013','prod-curux',  'var-cux-bas',  1, 17900,  'Curso UX/UI Design',           'Sin mentoring'),
+  ('ord-014','prod-adobe',  'var-adobe-t',  1, 122000, 'Adobe Creative Cloud',          'Equipo (5)'),
+  ('ord-014','prod-mse',    NULL,           1, 62000,  'Mouse Logitech MX Master 3S',   NULL),
+  ('ord-014','prod-db',     NULL,           1, 6900,   'PostgreSQL Schema Designer',    NULL),
+  ('ord-015','prod-mento',  NULL,           1, 95000,  'Mentoring Tech para CTOs',      NULL),
+  ('ord-016','prod-mon',    NULL,           1, 380000, 'Monitor LG 27 4K UHD',          NULL),
+  ('ord-016','prod-kbd',    'var-kbd-bk',   1, 89000,  'Teclado Mecanico Keychron K8', 'Negro'),
+  ('ord-017','prod-boil',   NULL,           1, 15900,  'Next.js SaaS Boilerplate',      NULL),
+  ('ord-017','prod-tmpl',   NULL,           1, 8900,   'Pack Templates UI Premium',     NULL),
+  ('ord-018','prod-aud',    'var-aud-bas',  1, 120000, 'Auditoria Tecnologica',         'Basica (1 dia)');

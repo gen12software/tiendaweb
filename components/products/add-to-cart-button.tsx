@@ -22,7 +22,9 @@ export default function AddToCartButton({ product, variantId = null, disabled }:
     : null
 
   const price = product.price + (variant?.price_modifier ?? 0)
-  const stock = variant ? variant.stock : (product.product_variants?.reduce((s, v) => s + v.stock, 0) || 99)
+  const stock = variant
+    ? variant.stock
+    : (product.product_variants?.length ? product.product_variants.reduce((s, v) => s + v.stock, 0) : (product.stock ?? 99))
   const image = product.product_images?.[0]?.url ?? null
 
   function handleAdd() {
@@ -42,14 +44,12 @@ export default function AddToCartButton({ product, variantId = null, disabled }:
   }
 
   return (
-    <Button
-      size="sm"
-      className="w-full"
+    <button
       onClick={handleAdd}
       disabled={disabled || loading}
+      className="flex-1 py-3 bg-foreground text-background text-xs font-bold uppercase tracking-widest hover:bg-foreground/85 transition-colors disabled:opacity-50"
     >
-      <ShoppingCart className="w-4 h-4 mr-2" />
-      Agregar
-    </Button>
+      {loading ? '...' : 'Comprar'}
+    </button>
   )
 }

@@ -35,6 +35,34 @@ export interface SiteConfig {
   slogan: string
   terms_url: string
   privacy_url: string
+  low_stock_threshold: string
+  about_title: string
+  about_subtitle: string
+  about_description: string
+  about_image_url: string
+  about_value1_icon: string
+  about_value1_title: string
+  about_value1_text: string
+  about_value2_icon: string
+  about_value2_title: string
+  about_value2_text: string
+  about_value3_icon: string
+  about_value3_title: string
+  about_value3_text: string
+  header_bg_color: string
+  header_text_color: string
+  announcement_bg_color: string
+  announcement_text_color: string
+  announcement_1: string
+  announcement_2: string
+  announcement_3: string
+  announcement_4: string
+  announcement_5: string
+  announcement_6: string
+  announcement_7: string
+  announcement_8: string
+  announcement_9: string
+  announcement_10: string
 }
 
 const DEFAULTS: SiteConfig = {
@@ -72,6 +100,34 @@ const DEFAULTS: SiteConfig = {
   slogan: '',
   terms_url: '/privacidad',
   privacy_url: '/privacidad',
+  low_stock_threshold: '5',
+  about_title: 'Quiénes Somos',
+  about_subtitle: '',
+  about_description: '',
+  about_image_url: '',
+  about_value1_icon: '⭐',
+  about_value1_title: '',
+  about_value1_text: '',
+  about_value2_icon: '🤝',
+  about_value2_title: '',
+  about_value2_text: '',
+  about_value3_icon: '🚀',
+  about_value3_title: '',
+  about_value3_text: '',
+  header_bg_color: '#0a0a0a',
+  header_text_color: '#ffffff',
+  announcement_bg_color: '#111111',
+  announcement_text_color: '#ffffff',
+  announcement_1: '',
+  announcement_2: '',
+  announcement_3: '',
+  announcement_4: '',
+  announcement_5: '',
+  announcement_6: '',
+  announcement_7: '',
+  announcement_8: '',
+  announcement_9: '',
+  announcement_10: '',
 }
 
 export async function getSiteConfig(): Promise<SiteConfig> {

@@ -8,13 +8,14 @@ import { OrderStatus } from '@/lib/types/store'
 export const metadata: Metadata = { title: 'Admin — Órdenes' }
 
 interface Props {
-  searchParams: Promise<{ q?: string; status?: string; page?: string }>
+  searchParams: Promise<{ q?: string; status?: string; desde?: string; hasta?: string; periodo?: string; page?: string }>
 }
 
 const PAGE_SIZE = 20
 
 export default async function AdminOrdenesPage({ searchParams }: Props) {
   const params = await searchParams
+  const { q, status, desde, hasta, periodo } = params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -30,29 +31,69 @@ export default async function AdminOrdenesPage({ searchParams }: Props) {
     .select('id, number, status, email, total, created_at', { count: 'exact' })
     .order('created_at', { ascending: false })
 
-  if (params.q) query = query.or(`email.ilike.%${params.q}%,number.ilike.%${params.q}%`)
-  if (params.status) query = query.eq('status', params.status)
+  if (q) query = query.or(`email.ilike.%${q}%,number.ilike.%${q}%`)
+  if (status) query = query.eq('status', status)
+
+  // Filtro por periodo o fechas manuales. Por defecto: última semana
+  if (desde) {
+    query = query.gte('created_at', `${desde}T00:00:00`)
+  } else if (hasta) {
+    // nada — solo aplica el hasta
+  } else {
+    const dias = periodo === '1d' ? 1 : periodo === '15d' ? 15 : periodo === '1m' ? 30 : 7
+    const fechaDesde = new Date()
+    fechaDesde.setDate(fechaDesde.getDate() - dias)
+    query = query.gte('created_at', fechaDesde.toISOString())
+  }
+  if (hasta) query = query.lte('created_at', `${hasta}T23:59:59`)
 
   query = query.range(from, to)
   const { data: orders, count } = await query
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
-  const STATUSES = ['payment_pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']
+  const STATUSES: { value: string; label: string }[] = [
+    { value: 'nueva',              label: 'Nueva' },
+    { value: 'en_preparacion',     label: 'En preparación' },
+    { value: 'enviado',            label: 'Enviado' },
+    { value: 'listo_para_retirar', label: 'Listo para retirar' },
+    { value: 'entregado',          label: 'Entregado' },
+    { value: 'cancelado',          label: 'Cancelado' },
+  ]
 
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 space-y-6">
         <h1 className="text-2xl font-bold text-gray-900">Órdenes</h1>
 
-        <form className="flex gap-3 flex-wrap">
-          <input name="q" defaultValue={params.q} placeholder="Buscar por email o número..."
-            className="border rounded-lg px-3 py-2 text-sm bg-white w-64" />
-          <select name="status" defaultValue={params.status}
+        <form className="flex gap-3 flex-wrap items-end">
+          <input name="q" defaultValue={q} placeholder="Buscar por email o número..."
+            className="border rounded-lg px-3 py-2 text-sm bg-white w-56" />
+          <select name="status" defaultValue={status}
             className="border rounded-lg px-3 py-2 text-sm bg-white">
             <option value="">Todos los estados</option>
-            {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+            {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
-          <button type="submit" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white">Filtrar</button>
+          <select name="periodo" defaultValue={periodo ?? '7d'}
+            className="border rounded-lg px-3 py-2 text-sm bg-white">
+            <option value="1d">Hoy</option>
+            <option value="7d">Última semana</option>
+            <option value="15d">Últimos 15 días</option>
+            <option value="1m">Último mes</option>
+            <option value="">Todas las fechas</option>
+          </select>
+          <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-0.5">
+              <label className="text-xs text-gray-500">Desde</label>
+              <input type="date" name="desde" defaultValue={desde}
+                className="border rounded-lg px-3 py-2 text-sm bg-white" />
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <label className="text-xs text-gray-500">Hasta</label>
+              <input type="date" name="hasta" defaultValue={hasta}
+                className="border rounded-lg px-3 py-2 text-sm bg-white" />
+            </div>
+          </div>
+          <button type="submit" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white h-[38px]">Filtrar</button>
         </form>
 
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">

@@ -22,7 +22,7 @@ export default function ProductDetail({ product, currencySymbol }: Props) {
   const { addItem } = useCart()
 
   const price = product.price + (selectedVariant?.price_modifier ?? 0)
-  const stock = selectedVariant ? selectedVariant.stock : (variants.length === 0 ? 99 : 0)
+  const stock = selectedVariant ? selectedVariant.stock : (variants.length === 0 ? (product.stock ?? 99) : 0)
   const outOfStock = variants.length > 0 && !selectedVariant
     ? false
     : stock === 0

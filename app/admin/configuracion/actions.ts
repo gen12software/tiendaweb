@@ -13,6 +13,13 @@ const ALL_KEYS = [
   'home_cta_title', 'home_cta_subtitle', 'home_cta_link',
   'contact_email', 'whatsapp_number', 'whatsapp_message', 'contact_schedule',
   'slogan', 'terms_url', 'privacy_url',
+  'about_title', 'about_subtitle', 'about_description', 'about_image_url',
+  'about_value1_icon', 'about_value1_title', 'about_value1_text',
+  'about_value2_icon', 'about_value2_title', 'about_value2_text',
+  'about_value3_icon', 'about_value3_title', 'about_value3_text',
+  'header_bg_color', 'header_text_color', 'announcement_bg_color', 'announcement_text_color',
+  'announcement_1', 'announcement_2', 'announcement_3', 'announcement_4', 'announcement_5',
+  'announcement_6', 'announcement_7', 'announcement_8', 'announcement_9', 'announcement_10',
 ]
 
 export async function updateSiteConfigAction(

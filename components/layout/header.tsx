@@ -5,20 +5,13 @@ import { logoutAction } from '@/app/(auth)/logout/actions'
 import { SiteConfig } from '@/lib/site-config'
 import CartButton from '@/components/cart/cart-button'
 import MobileMenu from '@/components/layout/mobile-menu'
+import HeaderWrapper from '@/components/layout/header-wrapper'
+import AnnouncementBar from '@/components/layout/announcement-bar'
+import NavLink from '@/components/layout/nav-link'
+import { User } from 'lucide-react'
 
 interface Props {
   config: SiteConfig
-}
-
-async function getCategories() {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('id, name, slug')
-    .eq('is_active', true)
-    .order('sort_order')
-    .limit(6)
-  return data ?? []
 }
 
 export default async function Header({ config }: Props) {
@@ -27,58 +20,61 @@ export default async function Header({ config }: Props) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const categories = await getCategories()
-
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <HeaderWrapper primaryColor={config.primary_color} textColor={config.header_text_color}>
+      <AnnouncementBar config={config} />
+
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center gap-4">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 mr-4 shrink-0">
-            {config.logo_url ? (
-              <Image src={config.logo_url} alt={config.site_name} width={120} height={40} className="h-8 w-auto object-contain" />
-            ) : (
-              <span className="text-lg font-bold" style={{ color: 'var(--color-primary)' }}>
+        <div className="flex h-16 items-center justify-between gap-6">
+
+          {/* Logo — izquierda */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            {config.logo_url && (
+              <Image
+                src={config.logo_url}
+                alt={config.site_name}
+                width={0}
+                height={0}
+                sizes="100vw"
+                className="h-9 w-auto object-contain"
+              />
+            )}
+            <div className="flex flex-col leading-none">
+              <span className="font-heading text-base font-bold tracking-tight text-white">
                 {config.site_name}
               </span>
-            )}
+              {config.slogan && (
+                <span className="text-[9px] tracking-[0.18em] uppercase text-white/40 hidden md:block mt-0.5">
+                  {config.slogan}
+                </span>
+              )}
+            </div>
           </Link>
 
-          {/* Nav desktop */}
-          <nav className="hidden md:flex items-center gap-1 flex-1">
-            <Link href="/productos" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors">
-              Productos
-            </Link>
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/productos?categoria=${cat.slug}`}
-                className="px-3 py-2 text-sm text-muted-foreground rounded-md hover:bg-muted hover:text-foreground transition-colors"
-              >
-                {cat.name}
-              </Link>
-            ))}
+          {/* Nav — centro */}
+          <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+            <NavLink href="/"              label="Inicio" />
+            <NavLink href="/productos"     label="Productos" />
+            <NavLink href="/quienes-somos" label="Quiénes Somos" />
+            <NavLink href="/contacto"      label="Contacto" />
           </nav>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 ml-auto">
-            {/* Cart */}
-            <CartButton />
-
-            {/* Account desktop */}
-            <div className="hidden md:flex items-center gap-2">
+          {/* Acciones — derecha */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="hidden md:flex items-center gap-2 text-sm">
               {user ? (
                 <>
                   <Link
                     href="/cuenta/ordenes"
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all"
                   >
-                    Mi cuenta
+                    <User className="w-4 h-4" />
+                    <span>Mi cuenta</span>
                   </Link>
                   <form action={logoutAction}>
                     <button
                       type="submit"
-                      className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors"
+                      className="px-3 py-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-all"
                     >
                       Salir
                     </button>
@@ -88,26 +84,25 @@ export default async function Header({ config }: Props) {
                 <>
                   <Link
                     href="/login"
-                    className="text-sm font-medium hover:text-primary transition-colors px-2"
+                    className="px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all"
                   >
                     Ingresar
                   </Link>
                   <Link
                     href="/register"
-                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors"
-                    style={{ backgroundColor: 'var(--color-primary)' }}
+                    className="px-4 py-1.5 rounded-full font-semibold text-white transition-all hover:opacity-90"
+                    style={{ backgroundColor: config.primary_color }}
                   >
                     Registrarse
                   </Link>
                 </>
               )}
             </div>
-
-            {/* Mobile menu */}
-            <MobileMenu user={user} categories={categories} />
+            <CartButton />
+            <MobileMenu user={user} categories={[]} />
           </div>
         </div>
       </div>
-    </header>
+    </HeaderWrapper>
   )
 }

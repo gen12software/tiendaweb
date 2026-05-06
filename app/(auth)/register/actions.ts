@@ -10,7 +10,7 @@ export async function registerAction(_prevState: { error: string }, formData: Fo
 
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { full_name } },
@@ -21,6 +21,12 @@ export async function registerAction(_prevState: { error: string }, formData: Fo
       return { error: 'Este email ya está registrado' }
     }
     return { error: 'Ocurrió un error al crear la cuenta. Intentá de nuevo.' }
+  }
+
+  // Cuando email confirmation está habilitado, Supabase retorna éxito pero con identities vacío
+  // si el email ya existe (para evitar enumeración). Lo detectamos así:
+  if (data.user && data.user.identities?.length === 0) {
+    return { error: 'Este email ya está registrado' }
   }
 
   redirect(`/register/check-email?email=${encodeURIComponent(email)}`)
