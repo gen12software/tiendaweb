@@ -19,7 +19,7 @@ export default function PaymentPendingPage() {
 
         <div className="flex flex-col gap-3">
           <Link
-            href="/dashboard"
+            href="/cuenta/ordenes"
             className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
           >
             Ir al dashboard

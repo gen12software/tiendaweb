@@ -11,7 +11,7 @@ export default async function AdminPlanesPage() {
 
   const { data: profile } = await supabase
     .from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') redirect('/dashboard')
+  if (profile?.role !== 'admin') redirect('/cuenta/ordenes')
 
   const { data: plans } = await supabase
     .from('plans')

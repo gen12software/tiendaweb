@@ -11,7 +11,7 @@ export default async function EditHeroSlidePage({ params }: { params: Promise<{ 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') redirect('/dashboard')
+  if (profile?.role !== 'admin') redirect('/cuenta/ordenes')
 
   const { data: slide } = await supabase.from('hero_slides').select('*').eq('id', id).single()
   if (!slide) notFound()

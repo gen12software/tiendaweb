@@ -9,7 +9,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const { data: adminProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (adminProfile?.role !== 'admin') redirect('/dashboard')
+  if (adminProfile?.role !== 'admin') redirect('/cuenta/ordenes')
 
   const { id } = await params
 

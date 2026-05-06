@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { MercadoPagoConfig, Payment } from 'mercadopago'
 import { createClient } from '@supabase/supabase-js'
 import { sendPaymentConfirmationEmail } from '@/lib/email/send-payment-confirmation'
+import { sendOrderConfirmationEmail } from '@/lib/email/send-order-confirmation'
 
 export async function POST(request: NextRequest) {
   const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! })
@@ -27,78 +28,112 @@ export async function POST(request: NextRequest) {
     const preferenceId = mpRaw.preference_id as string | undefined
     const metadata = mpRaw.metadata ?? {}
     const flow = metadata.flow as string | undefined
-    const orderId = metadata.order_id as string | undefined
     const userId = metadata.user_id as string | undefined
     const planId = metadata.plan_id as string | undefined
 
     // ── Flujo tienda ──
-    if (flow === 'store' || orderId) {
-      if (!orderId) {
-        console.error('Webhook tienda: order_id ausente en metadata', { paymentId })
+    if (flow === 'store') {
+      if (status !== 'approved') return NextResponse.json({ ok: true })
+
+      const contact = metadata.contact as any
+      const shipping = metadata.shipping as any
+      const items = metadata.items as any[]
+      const subtotal = Number(metadata.subtotal)
+      const shippingTotal = Number(metadata.shipping_total)
+      const total = Number(metadata.total)
+      const orderUserId = metadata.user_id ?? null
+
+      if (!contact || !items?.length) {
+        console.error('Webhook tienda: metadata incompleta', { paymentId })
         return NextResponse.json({ ok: true })
       }
 
-      if (status === 'approved') {
-        // Descontar stock con select for update via RPC o update directo
-        // Obtener order items
-        const { data: orderItems } = await supabaseAdmin
-          .from('order_items')
-          .select('variant_id, quantity')
-          .eq('order_id', orderId)
+      const shippingAddress = {
+        full_name: contact.full_name,
+        email: contact.email,
+        phone: contact.phone,
+        street: shipping.street,
+        city: shipping.city,
+        state: shipping.state,
+        postal_code: shipping.postal_code,
+        country: shipping.country,
+      }
 
-        if (orderItems) {
-          for (const item of orderItems) {
-            if (item.variant_id) {
-              await supabaseAdmin.rpc('decrement_variant_stock', {
-                p_variant_id: item.variant_id,
-                p_quantity: item.quantity,
-              })
-            }
-          }
+      // Crear la orden
+      const { data: order, error: orderError } = await supabaseAdmin
+        .from('orders')
+        .insert({
+          status: 'nueva',
+          email: contact.email,
+          user_id: orderUserId,
+          subtotal,
+          shipping_total: shippingTotal,
+          total,
+          shipping_address: shippingAddress,
+          shipping_method_id: shipping.shipping_method_id || null,
+        })
+        .select('id, number, public_token')
+        .single()
+
+      if (orderError || !order) {
+        console.error('Webhook: error creando orden', orderError)
+        return NextResponse.json({ ok: true })
+      }
+
+      // Crear order_items y descontar stock
+      const orderItems = items.map((item: any) => ({
+        order_id: order.id,
+        product_id: item.productId,
+        variant_id: item.variantId ?? null,
+        quantity: item.quantity,
+        unit_price: item.price,
+        total_price: item.price * item.quantity,
+        snapshot: { name: item.name, variant_name: item.variantName, image: item.image },
+      }))
+
+      await supabaseAdmin.from('order_items').insert(orderItems)
+
+      for (const item of items) {
+        if (item.variantId) {
+          await supabaseAdmin.rpc('decrement_variant_stock', {
+            p_variant_id: item.variantId,
+            p_quantity: item.quantity,
+          })
         }
+      }
 
-        await supabaseAdmin
-          .from('orders')
-          .update({ status: 'nueva' })
-          .eq('id', orderId)
+      // Registrar pago
+      await supabaseAdmin.from('payments').insert({
+        order_id: order.id,
+        user_id: orderUserId,
+        amount: total,
+        status: 'approved',
+        mp_payment_id: String(paymentId),
+        mp_preference_id: preferenceId ?? null,
+      })
 
-        await supabaseAdmin
-          .from('payments')
-          .update({ status: 'approved', mp_payment_id: String(paymentId) })
-          .eq('order_id', orderId)
-
-        // Email de confirmación
-        const { data: order } = await supabaseAdmin
-          .from('orders')
-          .select('email, number, total, shipping_address')
-          .eq('id', orderId)
-          .single()
-
-        if (order) {
-          const name = (order.shipping_address as any)?.full_name ?? ''
-          try {
-            await sendPaymentConfirmationEmail(
-              order.email,
-              name,
-              `Orden #${order.number}`,
-              Number(order.total),
-              new Date(),
-              String(paymentId),
-            )
-          } catch (emailErr) {
-            console.error('Email error:', emailErr)
-          }
-        }
-      } else if (status === 'rejected') {
-        await supabaseAdmin
-          .from('orders')
-          .update({ status: 'cancelled' })
-          .eq('id', orderId)
-
-        await supabaseAdmin
-          .from('payments')
-          .update({ status: 'rejected', mp_payment_id: String(paymentId) })
-          .eq('order_id', orderId)
+      // Email de confirmación
+      const addrStr = [shipping.street, shipping.city, shipping.state, shipping.postal_code]
+        .filter(Boolean).join(', ')
+      const emailItems = items.map((item: any) => ({
+        name: item.variantName ? `${item.name} - ${item.variantName}` : item.name,
+        quantity: item.quantity,
+        unit_price: Number(item.price),
+      }))
+      try {
+        await sendOrderConfirmationEmail({
+          email: contact.email,
+          fullName: contact.full_name,
+          orderNumber: order.number,
+          orderId: order.id,
+          publicToken: order.public_token,
+          items: emailItems,
+          total,
+          shippingTotal,
+          shippingAddress: addrStr,
+        })
+      } catch (emailErr) {
+        console.error('Email error:', emailErr)
       }
 
       return NextResponse.json({ ok: true })

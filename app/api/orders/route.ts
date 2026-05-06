@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
-        status: 'nueva',
+        status: 'pago_pendiente',
         email: contact.email,
         user_id: resolvedUserId,
         subtotal,

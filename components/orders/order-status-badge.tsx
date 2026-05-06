@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge'
 import { OrderStatus } from '@/lib/types/store'
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
+  pago_pendiente:     'Pago pendiente',
   nueva:              'Nueva',
   en_preparacion:     'En preparación',
   enviado:            'Enviado',
@@ -11,6 +12,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 }
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
+  pago_pendiente:     'bg-gray-100 text-gray-500 border-gray-200',
   nueva:              'bg-blue-100 text-blue-700 border-blue-200',
   en_preparacion:     'bg-yellow-100 text-yellow-700 border-yellow-200',
   enviado:            'bg-purple-100 text-purple-700 border-purple-200',

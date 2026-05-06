@@ -12,7 +12,7 @@ export async function sendWelcomeEmail(email: string, fullName: string): Promise
       WelcomeEmail({
         fullName: fullName || email,
         siteName: config.site_name,
-        dashboardUrl: `${appUrl}/dashboard`,
+        dashboardUrl: `${appUrl}/cuenta/ordenes`,
       }),
     )
 

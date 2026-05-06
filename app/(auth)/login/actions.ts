@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function loginAction(_prevState: { error: string }, formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
-  const redirectTo = (formData.get('redirectTo') as string) || '/dashboard'
+  const redirectTo = (formData.get('redirectTo') as string) || '/cuenta/ordenes'
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password })

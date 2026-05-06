@@ -8,7 +8,6 @@ import MobileMenu from '@/components/layout/mobile-menu'
 import HeaderWrapper from '@/components/layout/header-wrapper'
 import AnnouncementBar from '@/components/layout/announcement-bar'
 import NavLink from '@/components/layout/nav-link'
-import { User } from 'lucide-react'
 
 interface Props {
   config: SiteConfig
@@ -64,13 +63,7 @@ export default async function Header({ config }: Props) {
             <div className="hidden md:flex items-center gap-2 text-sm">
               {user ? (
                 <>
-                  <Link
-                    href="/cuenta/ordenes"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all"
-                  >
-                    <User className="w-4 h-4" />
-                    <span>Mi cuenta</span>
-                  </Link>
+                  <NavLink href="/cuenta/ordenes" label="Mi cuenta" />
                   <form action={logoutAction}>
                     <button
                       type="submit"
@@ -82,6 +75,7 @@ export default async function Header({ config }: Props) {
                 </>
               ) : (
                 <>
+                  <NavLink href="/mi-orden" label="Mi orden" />
                   <Link
                     href="/login"
                     className="px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all"

@@ -3,20 +3,22 @@ import { MercadoPagoConfig, Preference } from 'mercadopago'
 import { createClient } from '@/lib/supabase/server'
 import { CartItem } from '@/lib/types/store'
 
-const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! })
-
 export async function POST(request: NextRequest) {
+  const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! })
   const supabase = await createClient()
   const body = await request.json().catch(() => null)
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000').replace(/\/$/, '')
 
-  // ── Flujo tienda: order_id + items ──
-  if (body?.order_id) {
-    const { order_id, items, total, email } = body as {
-      order_id: string
+  // ── Flujo tienda: contact + shipping + items ──
+  if (body?.contact) {
+    const { contact, shipping, items, subtotal, shipping_total, total, user_id } = body as {
+      contact: { full_name: string; email: string; phone: string }
+      shipping: { street: string; city: string; state: string; postal_code: string; country: string; shipping_method_id?: string }
       items: CartItem[]
+      subtotal: number
+      shipping_total: number
       total: number
-      email: string
+      user_id: string | null
     }
 
     const mpItems = items.map((item) => ({
@@ -30,7 +32,7 @@ export async function POST(request: NextRequest) {
     const preference = await new Preference(mp).create({
       body: {
         items: mpItems,
-        payer: { email },
+        payer: { email: contact.email },
         back_urls: {
           success: `${appUrl}/checkout/confirmacion`,
           failure: `${appUrl}/checkout/error`,
@@ -39,8 +41,14 @@ export async function POST(request: NextRequest) {
         ...(appUrl.startsWith('https') ? { auto_return: 'approved' } : {}),
         notification_url: `${appUrl}/api/webhook`,
         metadata: {
-          order_id,
           flow: 'store',
+          contact,
+          shipping,
+          items,
+          subtotal,
+          shipping_total,
+          total,
+          user_id: user_id ?? null,
         },
       },
     })

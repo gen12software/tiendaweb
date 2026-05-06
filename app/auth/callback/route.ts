@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       const fullName = (user.user_metadata?.full_name as string | undefined) ?? ''
       sendWelcomeEmail(user.email!, fullName)
 
-      return NextResponse.redirect(`${origin}/dashboard`)
+      return NextResponse.redirect(`${origin}/cuenta/ordenes`)
     }
   }
 

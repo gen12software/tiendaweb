@@ -50,7 +50,7 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
     if (!contact || !shipping) return
     setLoading(true)
     try {
-      const res = await fetch('/api/orders', {
+      const mpRes = await fetch('/api/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -61,20 +61,6 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
           shipping_total: shippingTotal,
           total,
           user_id: user?.id ?? null,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Error al crear la orden')
-
-      // Redirige a MercadoPago
-      const mpRes = await fetch('/api/create-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          order_id: data.order_id,
-          items,
-          total,
-          email: contact.email,
         }),
       })
       const mpData = await mpRes.json()

@@ -20,7 +20,7 @@ export default async function AdminOrdenesPage({ searchParams }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') redirect('/dashboard')
+  if (profile?.role !== 'admin') redirect('/cuenta/ordenes')
 
   const page = parseInt(params.page ?? '1', 10)
   const from = (page - 1) * PAGE_SIZE

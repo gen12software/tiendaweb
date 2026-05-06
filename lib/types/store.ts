@@ -71,6 +71,7 @@ export interface OrderAddress {
 }
 
 export type OrderStatus =
+  | 'pago_pendiente'
   | 'nueva'
   | 'en_preparacion'
   | 'enviado'

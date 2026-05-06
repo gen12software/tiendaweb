@@ -24,7 +24,7 @@ export async function sendPaymentConfirmationEmail(
         startsAt: new Date(),
         expiresAt,
         mpPaymentId,
-        dashboardUrl: `${appUrl}/dashboard`,
+        dashboardUrl: `${appUrl}/cuenta/ordenes`,
       }),
     )
 

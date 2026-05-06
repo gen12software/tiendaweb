@@ -8,7 +8,7 @@ export default async function EditContentPage({ params }: { params: Promise<{ id
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') redirect('/dashboard')
+  if (profile?.role !== 'admin') redirect('/cuenta/ordenes')
 
   const { id } = await params
   const { data: item } = await supabase

@@ -1,6 +1,7 @@
 'use client'
 
 import { use, useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 const RESEND_COOLDOWN = 60
@@ -82,6 +83,10 @@ export default function CheckEmailClient({
             ? `Reenviar email (${secondsLeft}s)`
             : 'Reenviar email'}
         </button>
+
+        <Link href="/" className="block text-sm text-gray-500 hover:text-gray-700 transition-colors">
+          Volver al inicio
+        </Link>
       </div>
     </div>
   )

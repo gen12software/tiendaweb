@@ -10,7 +10,7 @@ export default async function NewHeroSlidePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') redirect('/dashboard')
+  if (profile?.role !== 'admin') redirect('/cuenta/ordenes')
 
   const { count } = await supabase.from('hero_slides').select('id', { count: 'exact', head: true })
   if ((count ?? 0) >= 4) redirect('/admin/hero')

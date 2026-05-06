@@ -48,7 +48,7 @@ export default async function PaymentSuccessPage() {
               <p className="text-sm text-gray-500">Válido hasta el {expiresFormatted}</p>
             )}
             <Link
-              href="/dashboard"
+              href="/cuenta/ordenes"
               className="inline-block rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
             >
               Ir al dashboard
