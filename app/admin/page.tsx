@@ -6,11 +6,6 @@ import Link from 'next/link'
 import OrderStatusBadge from '@/components/orders/order-status-badge'
 import { OrderStatus } from '@/lib/types/store'
 
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 const PERIODOS = [
   { value: '1d',  label: 'Hoy' },
   { value: '7d',  label: 'Última semana' },
@@ -36,6 +31,10 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') redirect('/dashboard')
 
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   const { periodo = '7d' } = await searchParams
   const config = await getSiteConfig()
   const lowStockThreshold = parseInt(config.low_stock_threshold ?? '5') || 5

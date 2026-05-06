@@ -4,15 +4,14 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@supabase/supabase-js'
 import { OrderStatus } from '@/lib/types/store'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export async function updateOrderAction(
   id: string,
   data: { status: OrderStatus; tracking_number: string; admin_notes: string }
 ) {
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   const { data: currentOrder } = await supabaseAdmin
     .from('orders')
     .select('status')
