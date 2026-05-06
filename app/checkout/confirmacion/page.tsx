@@ -24,15 +24,17 @@ export default function ConfirmacionPage() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!preferenceId) return
-    // Polling: el webhook puede tardar unos segundos en crear la orden
+    const prefId = preferenceId || sessionStorage.getItem('mp_preference_id')
+    if (!prefId) return
+
     let attempts = 0
     const poll = async () => {
-      const res = await fetch(`/api/orders/by-preference/${encodeURIComponent(preferenceId)}`)
+      const res = await fetch(`/api/orders/by-preference/${encodeURIComponent(prefId)}`)
       const data = await res.json()
       if (data.order) {
         setOrder(data.order)
-      } else if (attempts < 6) {
+        sessionStorage.removeItem('mp_preference_id')
+      } else if (attempts < 8) {
         attempts++
         setTimeout(poll, 2000)
       }

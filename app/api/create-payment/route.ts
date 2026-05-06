@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ init_point: preference.init_point })
+    return NextResponse.json({ init_point: preference.init_point, preference_id: preference.id })
   }
 
   // ── Flujo suscripciones: planId (original) ──

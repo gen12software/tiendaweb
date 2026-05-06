@@ -66,6 +66,9 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
       const mpData = await mpRes.json()
       if (!mpRes.ok) throw new Error(mpData.error ?? 'Error al iniciar el pago')
 
+      if (mpData.preference_id) {
+        sessionStorage.setItem('mp_preference_id', mpData.preference_id)
+      }
       clearCart()
       window.location.href = mpData.init_point
     } catch (err: any) {
