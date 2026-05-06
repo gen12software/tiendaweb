@@ -5,7 +5,6 @@ import { sendPaymentConfirmationEmail } from '@/lib/email/send-payment-confirmat
 
 const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! })
 
-// Cliente admin con service role — omite RLS
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -24,23 +23,91 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true }, { status: 200 })
     }
 
-    // Consulta el estado real del pago a la API de MP
     const mpPayment = await new Payment(mp).get({ id: paymentId })
+    const mpRaw = mpPayment as any
+    const status = mpRaw.status as string | undefined
+    const preferenceId = mpRaw.preference_id as string | undefined
+    const metadata = mpRaw.metadata ?? {}
+    const flow = metadata.flow as string | undefined
+    const orderId = metadata.order_id as string | undefined
+    const userId = metadata.user_id as string | undefined
+    const planId = metadata.plan_id as string | undefined
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mpPaymentRaw = mpPayment as any
-    const status = mpPaymentRaw.status as string | undefined
-    const preferenceId = mpPaymentRaw.preference_id as string | undefined
-    const userId = mpPaymentRaw.metadata?.user_id as string | undefined
-    const planId = mpPaymentRaw.metadata?.plan_id as string | undefined
+    // ── Flujo tienda ──
+    if (flow === 'store' || orderId) {
+      if (!orderId) {
+        console.error('Webhook tienda: order_id ausente en metadata', { paymentId })
+        return NextResponse.json({ ok: true })
+      }
 
-    if (!preferenceId && !userId) {
-      console.error('Webhook MP: no se pudo identificar el pago', { paymentId, body })
-      return NextResponse.json({ ok: true }, { status: 200 })
+      if (status === 'approved') {
+        // Descontar stock con select for update via RPC o update directo
+        // Obtener order items
+        const { data: orderItems } = await supabaseAdmin
+          .from('order_items')
+          .select('variant_id, quantity')
+          .eq('order_id', orderId)
+
+        if (orderItems) {
+          for (const item of orderItems) {
+            if (item.variant_id) {
+              await supabaseAdmin.rpc('decrement_variant_stock', {
+                p_variant_id: item.variant_id,
+                p_quantity: item.quantity,
+              })
+            }
+          }
+        }
+
+        await supabaseAdmin
+          .from('orders')
+          .update({ status: 'paid' })
+          .eq('id', orderId)
+
+        await supabaseAdmin
+          .from('payments')
+          .update({ status: 'approved', mp_payment_id: String(paymentId) })
+          .eq('order_id', orderId)
+
+        // Email de confirmación
+        const { data: order } = await supabaseAdmin
+          .from('orders')
+          .select('email, number, total, shipping_address')
+          .eq('id', orderId)
+          .single()
+
+        if (order) {
+          const name = (order.shipping_address as any)?.full_name ?? ''
+          try {
+            await sendPaymentConfirmationEmail(
+              order.email,
+              name,
+              `Orden #${order.number}`,
+              Number(order.total),
+              new Date(),
+              String(paymentId),
+            )
+          } catch (emailErr) {
+            console.error('Email error:', emailErr)
+          }
+        }
+      } else if (status === 'rejected') {
+        await supabaseAdmin
+          .from('orders')
+          .update({ status: 'cancelled' })
+          .eq('id', orderId)
+
+        await supabaseAdmin
+          .from('payments')
+          .update({ status: 'rejected', mp_payment_id: String(paymentId) })
+          .eq('order_id', orderId)
+      }
+
+      return NextResponse.json({ ok: true })
     }
 
+    // ── Flujo suscripciones (original) ──
     if (status === 'approved') {
-      // Buscar el registro de payments por preference_id o por user+plan
       const query = supabaseAdmin
         .from('payments')
         .update({ status: 'approved', mp_payment_id: String(paymentId) })
@@ -51,7 +118,6 @@ export async function POST(request: NextRequest) {
         await query.eq('user_id', userId).eq('plan_id', planId).eq('status', 'pending')
       }
 
-      // Obtener duration_days del plan para calcular expiración
       if (userId && planId) {
         const { data: plan } = await supabaseAdmin
           .from('plans')
@@ -68,7 +134,6 @@ export async function POST(request: NextRequest) {
             .update({ plan_id: planId, plan_expires_at: expiresAt.toISOString() })
             .eq('id', userId)
 
-          // Enviar email de confirmación de pago (fire-and-forget)
           const { data: profile } = await supabaseAdmin
             .from('profiles')
             .select('full_name')
@@ -101,7 +166,6 @@ export async function POST(request: NextRequest) {
       }
     }
   } catch (err) {
-    // Loguear pero siempre responder 200 para que MP no reintente indefinidamente
     console.error('Webhook MP error:', err)
   }
 

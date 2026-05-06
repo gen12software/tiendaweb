@@ -1,0 +1,28 @@
+-- Nuevas claves de site_config para la tienda
+insert into public.site_config (key, value) values
+  ('color_secondary',         '#6366f1'),
+  ('color_accent',            '#f59e0b'),
+  ('color_background',        '#ffffff'),
+  ('color_surface',           '#f9fafb'),
+  ('font_heading',            ''),
+  ('font_body',               ''),
+  ('favicon_url',             ''),
+  ('social_instagram',        ''),
+  ('social_facebook',         ''),
+  ('social_tiktok',           ''),
+  ('currency_symbol',         '$'),
+  ('currency_locale',         'es-AR'),
+  ('free_shipping_threshold', ''),
+  ('hero_image_url',          ''),
+  ('hero_cta_text',           'Ver productos'),
+  ('hero_cta_url',            '/productos'),
+  ('home_show_featured',      'true'),
+  ('home_show_categories',    'true'),
+  ('home_show_cta',           'true'),
+  ('home_cta_title',          ''),
+  ('home_cta_subtitle',       ''),
+  ('home_cta_link',           '/productos'),
+  ('slogan',                  ''),
+  ('terms_url',               '/privacidad'),
+  ('privacy_url',             '/privacidad')
+on conflict (key) do nothing;
