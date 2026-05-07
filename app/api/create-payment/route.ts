@@ -12,9 +12,10 @@ export async function POST(request: NextRequest) {
 
   // ── Flujo tienda: contact + shipping + items ──
   if (body?.contact) {
-    const { contact, shipping, items, user_id } = body as {
+    const { contact, shipping, billing_data, items, user_id } = body as {
       contact: { full_name: string; email: string; phone: string }
       shipping: { street: string; city: string; state: string; postal_code: string; country: string; shipping_method_id?: string }
+      billing_data: Record<string, unknown>
       items: CartItem[]
       user_id: string | null
     }
@@ -95,6 +96,7 @@ export async function POST(request: NextRequest) {
           shipping_total: shippingTotal,
           total,
           user_id: user_id ?? null,
+          billing_data: billing_data ?? { same_as_shipping: true },
         },
       },
     })

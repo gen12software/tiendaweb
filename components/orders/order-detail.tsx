@@ -71,6 +71,23 @@ export default function OrderDetail({ order, currencySymbol = '$' }: Props) {
           </p>
         </div>
       )}
+
+      {/* Facturación */}
+      {order.billing_data && (
+        <div className="border-t pt-3">
+          <p className="text-sm font-semibold mb-1">Datos de facturación</p>
+          {order.billing_data.same_as_shipping ? (
+            <p className="text-sm text-muted-foreground">Mismos datos que el envío</p>
+          ) : (
+            <div className="text-sm text-muted-foreground space-y-0.5">
+              <p>{order.billing_data.first_name} {order.billing_data.last_name} · DNI {order.billing_data.dni}</p>
+              <p>{order.billing_data.street}{order.billing_data.apartment ? `, ${order.billing_data.apartment}` : ''}</p>
+              <p>{order.billing_data.city}, {order.billing_data.state} {order.billing_data.postal_code}, {order.billing_data.country}</p>
+              {order.billing_data.phone && <p>{order.billing_data.phone}</p>}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

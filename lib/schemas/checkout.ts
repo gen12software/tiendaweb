@@ -15,5 +15,23 @@ export const shippingSchema = z.object({
   shipping_method_id: z.string().optional(),
 })
 
+export const billingSchema = z.discriminatedUnion('same_as_shipping', [
+  z.object({ same_as_shipping: z.literal(true) }),
+  z.object({
+    same_as_shipping: z.literal(false),
+    country: z.string().min(2, 'País requerido'),
+    first_name: z.string().min(1, 'Nombre requerido'),
+    last_name: z.string().min(1, 'Apellido requerido'),
+    dni: z.string().min(7, 'DNI requerido'),
+    street: z.string().min(3, 'Dirección requerida'),
+    apartment: z.string().optional(),
+    postal_code: z.string().min(3, 'Código postal requerido'),
+    city: z.string().min(2, 'Ciudad requerida'),
+    state: z.string().min(2, 'Provincia requerida'),
+    phone: z.string().optional(),
+  }),
+])
+
 export type ContactFormData = z.infer<typeof contactSchema>
 export type ShippingFormData = z.infer<typeof shippingSchema>
+export type BillingFormData = z.infer<typeof billingSchema>

@@ -9,6 +9,7 @@ import PaymentStep from './payment-step'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { isFreeShipping } from '@/lib/utils'
+import { BillingFormData } from '@/lib/schemas/checkout'
 
 export interface ContactData {
   full_name: string
@@ -39,6 +40,7 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
   const [step, setStep] = useState(0)
   const [contact, setContact] = useState<ContactData | null>(null)
   const [shipping, setShipping] = useState<ShippingData | null>(null)
+  const [billing, setBilling] = useState<BillingFormData>({ same_as_shipping: true })
   const [loading, setLoading] = useState(false)
   const { items, subtotal, clearCart } = useCart()
   const router = useRouter()
@@ -57,6 +59,7 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
         body: JSON.stringify({
           contact,
           shipping,
+          billing_data: billing,
           items,
           subtotal,
           shipping_total: shippingTotal,
@@ -69,6 +72,9 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
 
       if (mpData.preference_id) {
         sessionStorage.setItem('mp_preference_id', mpData.preference_id)
+      }
+      if (contact?.email) {
+        sessionStorage.setItem('checkout_email', contact.email)
       }
       clearCart()
       window.location.href = mpData.init_point
@@ -122,13 +128,19 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
             freeShippingThreshold={freeShippingThreshold}
             currencySymbol={currencySymbol}
             onBack={() => setStep(0)}
-            onNext={(data) => { setShipping(data); setStep(2) }}
+            onNext={(data) => {
+              const { billing_data, ...shippingData } = data
+              setShipping(shippingData)
+              setBilling(billing_data)
+              setStep(2)
+            }}
           />
         )}
         {step === 2 && (
           <PaymentStep
             contact={contact!}
             shipping={shipping!}
+            billing={billing}
             selectedMethod={selectedMethod ?? null}
             subtotal={subtotal}
             shippingTotal={shippingTotal}
@@ -143,7 +155,7 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
 
       {/* Resumen lateral */}
       <div className="lg:sticky lg:top-24 lg:self-start">
-        <div className="border rounded-xl p-4 space-y-3 bg-card">
+        <div className="border rounded-xl p-5 space-y-3 bg-card">
           <p className="font-semibold text-sm">Resumen</p>
           <div className="space-y-2 text-sm">
             {items.map((item) => (

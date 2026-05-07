@@ -12,10 +12,6 @@ export async function GET(
   const { preferenceId } = await params
   const email = req.nextUrl.searchParams.get('email')?.toLowerCase().trim()
 
-  if (!email) {
-    return NextResponse.json({ order: null }, { status: 404 })
-  }
-
   const { data: payment } = await supabaseAdmin
     .from('payments')
     .select('order_id')
@@ -26,12 +22,14 @@ export async function GET(
     return NextResponse.json({ order: null }, { status: 404 })
   }
 
-  const { data: order } = await supabaseAdmin
+  let query = supabaseAdmin
     .from('orders')
-    .select('id, number, status, email, total, public_token')
+    .select('id, number, status, email, subtotal, shipping_total, total, public_token, shipping_address, order_items(id, quantity, unit_price, total_price, snapshot)')
     .eq('id', payment.order_id)
-    .eq('email', email)
-    .single()
+
+  if (email) query = query.eq('email', email)
+
+  const { data: order } = await query.single()
 
   return NextResponse.json({ order: order ?? null })
 }

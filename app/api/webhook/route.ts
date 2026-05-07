@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
       }> | undefined
       const shippingTotal = Number(metadata.shipping_total)
       const orderUserId = (metadata.user_id as string | undefined) ?? null
+      const billingData = (metadata.billing_data as Record<string, unknown> | undefined) ?? { same_as_shipping: true }
 
       if (!contact || !items?.length || !shipping) {
         console.error('Webhook tienda: metadata incompleta', { paymentId })
@@ -132,6 +133,7 @@ export async function POST(request: NextRequest) {
           total: verifiedTotal,
           shipping_address: shippingAddress,
           shipping_method_id: shipping.shipping_method_id || null,
+          billing_data: billingData,
         })
         .select('id, number, public_token')
         .single()

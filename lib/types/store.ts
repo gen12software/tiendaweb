@@ -59,6 +59,20 @@ export interface CartItem {
   stock: number
 }
 
+export interface BillingAddress {
+  same_as_shipping: boolean
+  country?: string
+  first_name?: string
+  last_name?: string
+  dni?: string
+  street?: string
+  apartment?: string
+  postal_code?: string
+  city?: string
+  state?: string
+  phone?: string
+}
+
 export interface OrderAddress {
   full_name: string
   email: string
@@ -92,6 +106,8 @@ export interface Order {
   shipping_method_id: string | null
   notes: string | null
   tracking_number: string | null
+  billing_data: BillingAddress | null
+  invoice_url: string | null
   public_token: string
   created_at: string
   updated_at: string

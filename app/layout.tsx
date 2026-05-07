@@ -77,10 +77,10 @@ export default async function RootLayout({
           <ConditionalShell
             header={<Header config={config} />}
             footer={<Footer config={config} />}
+            whatsapp={<WhatsAppButton />}
           >
             {children}
           </ConditionalShell>
-          <WhatsAppButton />
           <Toaster />
         </CartProvider>
       </body>
