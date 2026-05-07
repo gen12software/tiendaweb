@@ -4,7 +4,7 @@ import { useActionState, useState } from 'react'
 import { updateSiteConfigAction } from './actions'
 import type { SiteConfig } from '@/lib/site-config'
 import {
-  Store, Palette, Home, ShoppingBag, Phone, Shield, Upload, X, Users, Megaphone,
+  Store, Palette, Home, ShoppingBag, Phone, Shield, Upload, X, Users, Megaphone, CreditCard,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -414,6 +414,80 @@ function SecLegal({ config }: { config: SiteConfig }) {
   )
 }
 
+// ── Sección Pagos ────────────────────────────────────────────────────────────
+
+const PAYMENT_METHODS_OPTIONS = [
+  { id: 'mercadopago',   label: 'Mercado Pago',          description: 'Tarjeta, débito o dinero en cuenta' },
+  { id: 'transferencia', label: 'Transferencia bancaria', description: 'CBU / Alias' },
+  { id: 'efectivo',      label: 'Efectivo en local',      description: 'Pago al retirar o recibir' },
+]
+
+function SecPagos({ config }: { config: SiteConfig }) {
+  const enabledList = config.payment_methods_enabled
+    ? config.payment_methods_enabled.split(',').map((s) => s.trim()).filter(Boolean)
+    : ['mercadopago']
+
+  const [enabled, setEnabled] = useState<string[]>(enabledList)
+
+  function toggle(id: string) {
+    setEnabled((prev) => {
+      if (prev.includes(id)) {
+        if (prev.length === 1) return prev // siempre al menos 1
+        return prev.filter((p) => p !== id)
+      }
+      return [...prev, id]
+    })
+  }
+
+  const showTransferFields = enabled.includes('transferencia')
+
+  return (
+    <div className="space-y-6">
+      <input type="hidden" name="payment_methods_enabled" value={enabled.join(',')} />
+
+      <div>
+        <p className="text-sm font-semibold text-[#111] mb-1">Métodos habilitados</p>
+        <p className="text-xs text-[#888] mb-4">Seleccioná los métodos que querés ofrecer. Debe quedar al menos uno activo.</p>
+        <div className="space-y-3">
+          {PAYMENT_METHODS_OPTIONS.map(({ id, label, description }) => {
+            const active = enabled.includes(id)
+            const isLast = enabled.length === 1 && active
+            return (
+              <label
+                key={id}
+                className={`flex items-center justify-between rounded-xl border-2 p-4 cursor-pointer transition-colors select-none ${
+                  active ? 'border-[#111] bg-[#f5f5f5]' : 'border-[#e5e5e5] hover:border-[#bbb]'
+                } ${isLast ? 'opacity-60 pointer-events-none' : ''}`}
+              >
+                <div>
+                  <p className="text-sm font-medium text-[#111]">{label}</p>
+                  <p className="text-xs text-[#888]">{description}</p>
+                </div>
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                  active ? 'bg-[#111] border-[#111]' : 'border-[#ccc]'
+                }`}>
+                  {active && <span className="text-white text-xs font-bold">✓</span>}
+                </div>
+                <input type="checkbox" className="hidden" checked={active} onChange={() => toggle(id)} disabled={isLast} />
+              </label>
+            )
+          })}
+        </div>
+      </div>
+
+      {showTransferFields && (
+        <div className="space-y-4 border-t border-[#f0f0f0] pt-5">
+          <p className="text-sm font-semibold text-[#111]">Datos bancarios para Transferencia</p>
+          <p className="text-xs text-[#888]">Estos datos se muestran al cliente al confirmar su pedido por transferencia.</p>
+          <Field id="transfer_cbu" label="CBU" defaultValue={config.transfer_cbu} placeholder="0000000000000000000000" />
+          <Field id="transfer_alias" label="Alias" defaultValue={config.transfer_alias} placeholder="mi.alias.mercadopago" />
+          <Field id="transfer_message" label="Mensaje para el cliente" defaultValue={config.transfer_message} placeholder="Envianos el comprobante al email pagos@tienda.com" />
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Nav items ───────────────────────────────────────────────────────────────
 
 const SECTIONS = [
@@ -423,6 +497,7 @@ const SECTIONS = [
   { id: 'nosotros',  label: 'Quiénes Somos', Icon: Users },
   { id: 'anuncios',  label: 'Anuncios',      Icon: Megaphone },
   { id: 'tienda',    label: 'Tienda',        Icon: ShoppingBag },
+  { id: 'pagos',     label: 'Pagos',         Icon: CreditCard },
   { id: 'contacto',  label: 'Contacto',      Icon: Phone },
   { id: 'legal',     label: 'Legal',         Icon: Shield },
 ]
@@ -494,6 +569,7 @@ export default function ConfigForm({ config }: { config: SiteConfig }) {
           {active === 'nosotros'  && <SecNosotros  config={config} />}
           {active === 'anuncios'  && <SecAnuncios  config={config} />}
           {active === 'tienda'    && <SecTienda    config={config} />}
+          {active === 'pagos'     && <SecPagos     config={config} />}
           {active === 'contacto'  && <SecContacto  config={config} />}
           {active === 'legal'     && <SecLegal     config={config} />}
 

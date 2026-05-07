@@ -151,6 +151,7 @@ export async function POST(request: NextRequest) {
         .from('orders')
         .insert({
           status: 'nueva',
+          payment_method: 'mercadopago',
           email: contact.email,
           user_id: orderUserId,
           subtotal: recalcSubtotal,

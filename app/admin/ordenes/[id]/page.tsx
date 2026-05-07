@@ -27,7 +27,7 @@ export default async function AdminOrdenDetailPage({ params }: Props) {
     .from('orders')
     .select(`
       id, number, status, email, subtotal, shipping_total, total, notes,
-      admin_notes, tracking_number, shipping_address, billing_data, invoice_url, created_at, updated_at,
+      admin_notes, tracking_number, shipping_address, billing_data, invoice_url, payment_method, created_at, updated_at,
       shipping_methods(id, name, price, estimated_days),
       order_items(id, quantity, unit_price, total_price, snapshot)
     `)

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle, Clock, Copy, Check, AlertCircle } from 'lucide-react'
+import { CheckCircle, Clock, Copy, Check, AlertCircle, Banknote } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -31,8 +31,25 @@ interface OrderSummary {
   shipping_total: number
   total: number
   public_token: string
+  payment_method: string | null
   shipping_address: ShippingAddress | null
   order_items: OrderItem[]
+}
+
+interface TransferData {
+  cbu: string
+  alias: string
+  message: string
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  pago_pendiente: 'Pendiente de pago',
+  nueva: 'Confirmada',
+  en_preparacion: 'En preparación',
+  enviado: 'Enviado',
+  listo_para_retirar: 'Listo para retirar',
+  entregado: 'Entregado',
+  cancelado: 'Cancelado',
 }
 
 export default function ConfirmacionPage() {
@@ -40,12 +57,36 @@ export default function ConfirmacionPage() {
   const preferenceId = searchParams.get('preference_id')
   const paymentId = searchParams.get('payment_id')
   const mpStatus = searchParams.get('status')
+  const ordenToken = searchParams.get('orden')
+  const metodo = searchParams.get('metodo') as 'transferencia' | 'efectivo' | null
 
   const [order, setOrder] = useState<OrderSummary | null>(null)
+  const [transferData, setTransferData] = useState<TransferData | null>(null)
   const [copied, setCopied] = useState(false)
   const [failed, setFailed] = useState(false)
 
+  const isManualPayment = !!ordenToken
+
   useEffect(() => {
+    // Flujo manual (transferencia / efectivo)
+    if (ordenToken) {
+      fetch(`/api/orders/by-token/${encodeURIComponent(ordenToken)}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.order) {
+            setOrder(data.order)
+            if (data.order.payment_method === 'transferencia' && data.transferData) {
+              setTransferData(data.transferData)
+            }
+          } else {
+            setFailed(true)
+          }
+        })
+        .catch(() => setFailed(true))
+      return
+    }
+
+    // Flujo MP (preference_id polling)
     const prefId = preferenceId || sessionStorage.getItem('mp_preference_id')
     if (!prefId) return
 
@@ -70,7 +111,7 @@ export default function ConfirmacionPage() {
       }
     }
     poll()
-  }, [preferenceId, paymentId])
+  }, [preferenceId, paymentId, ordenToken])
 
   const copyNumber = () => {
     if (!order) return
@@ -80,20 +121,31 @@ export default function ConfirmacionPage() {
   }
 
   const approved = mpStatus === 'approved'
+  const isPending = isManualPayment || (!approved && !mpStatus)
 
   return (
     <div className="mx-auto max-w-lg px-4 py-12">
       <div className="text-center mb-8">
-        {approved ? (
+        {isManualPayment ? (
+          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+        ) : approved ? (
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
         ) : (
           <Clock className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
         )}
         <h1 className="text-2xl font-bold mb-2">
-          {approved ? '¡Pago confirmado!' : 'Pago en proceso'}
+          {isManualPayment
+            ? '¡Pedido recibido!'
+            : approved
+            ? '¡Pago confirmado!'
+            : 'Pago en proceso'}
         </h1>
         <p className="text-muted-foreground">
-          {approved
+          {isManualPayment
+            ? metodo === 'transferencia'
+              ? 'Realizá la transferencia con los datos que aparecen abajo y tu pedido quedará confirmado.'
+              : 'Tu pedido está registrado. Abonás al retirar o al recibir el pedido.'
+            : approved
             ? 'Tu pedido fue registrado. Te enviamos un email con el resumen.'
             : 'Tu pago está siendo procesado. Te avisaremos por email cuando se confirme.'}
         </p>
@@ -134,10 +186,55 @@ export default function ConfirmacionPage() {
                 </button>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Guardá este número para consultar el estado de tu pedido en cualquier momento, incluso sin cuenta.
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-muted-foreground">Estado</span>
+              <span className="text-xs font-medium">
+                {STATUS_LABELS[order.status] ?? order.status}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Guardá este número para consultar el estado de tu pedido en cualquier momento.
             </p>
           </div>
+
+          {/* Datos de transferencia */}
+          {metodo === 'transferencia' && (transferData?.cbu || transferData?.alias || transferData?.message) && (
+            <div className="border border-blue-200 bg-blue-50 rounded-xl p-5 space-y-3">
+              <div className="flex items-center gap-2 text-blue-700">
+                <Banknote className="w-5 h-5" />
+                <span className="font-semibold text-sm">Datos para la transferencia</span>
+              </div>
+              <div className="space-y-2 text-sm">
+                {transferData.cbu && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-blue-600 font-medium shrink-0">CBU</span>
+                    <span className="font-mono text-blue-800 text-right break-all">{transferData.cbu}</span>
+                  </div>
+                )}
+                {transferData.alias && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-blue-600 font-medium shrink-0">Alias</span>
+                    <span className="font-mono text-blue-800 text-right">{transferData.alias}</span>
+                  </div>
+                )}
+                <div className="flex justify-between gap-4 pt-1 border-t border-blue-200">
+                  <span className="text-blue-600 font-medium shrink-0">Total</span>
+                  <span className="font-bold text-blue-800">${order.total.toLocaleString('es-AR')}</span>
+                </div>
+              </div>
+              {transferData.message && (
+                <p className="text-xs text-blue-700 bg-blue-100 rounded-lg p-3">{transferData.message}</p>
+              )}
+            </div>
+          )}
+
+          {/* Efectivo */}
+          {metodo === 'efectivo' && (
+            <div className="border border-amber-200 bg-amber-50 rounded-xl p-5 space-y-2">
+              <p className="text-sm font-semibold text-amber-700">Pago en efectivo</p>
+              <p className="text-xs text-amber-600">Abonás al retirar o al recibir tu pedido. El total es <strong>${order.total.toLocaleString('es-AR')}</strong>.</p>
+            </div>
+          )}
 
           {/* Ítems */}
           <div className="bg-muted rounded-xl p-5 space-y-3">

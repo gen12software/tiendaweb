@@ -63,6 +63,10 @@ export interface SiteConfig {
   announcement_8: string
   announcement_9: string
   announcement_10: string
+  payment_methods_enabled: string
+  transfer_cbu: string
+  transfer_alias: string
+  transfer_message: string
 }
 
 const DEFAULTS: SiteConfig = {
@@ -128,6 +132,10 @@ const DEFAULTS: SiteConfig = {
   announcement_8: '',
   announcement_9: '',
   announcement_10: '',
+  payment_methods_enabled: 'mercadopago',
+  transfer_cbu: '',
+  transfer_alias: '',
+  transfer_message: '',
 }
 
 export async function getSiteConfig(): Promise<SiteConfig> {

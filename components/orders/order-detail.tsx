@@ -70,6 +70,19 @@ export default function OrderDetail({ order, currencySymbol = '$' }: Props) {
         {address?.phone && <p className="text-sm text-muted-foreground">{address.phone}</p>}
       </div>
 
+      {/* Método de pago */}
+      {order.payment_method && (
+        <div className="border-t pt-3">
+          <p className="text-sm font-semibold mb-1">Método de pago</p>
+          <p className="text-sm text-muted-foreground">
+            {order.payment_method === 'mercadopago' ? 'Mercado Pago'
+              : order.payment_method === 'transferencia' ? 'Transferencia bancaria'
+              : order.payment_method === 'efectivo' ? 'Efectivo en local'
+              : order.payment_method}
+          </p>
+        </div>
+      )}
+
       {/* Envío */}
       <div className="border-t pt-3 space-y-1">
         <p className="text-sm font-semibold mb-1">Envío</p>

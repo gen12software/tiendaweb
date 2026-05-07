@@ -108,6 +108,7 @@ export interface Order {
   tracking_number: string | null
   billing_data: BillingAddress | null
   invoice_url: string | null
+  payment_method: string | null
   public_token: string
   created_at: string
   updated_at: string

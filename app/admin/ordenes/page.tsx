@@ -28,7 +28,7 @@ export default async function AdminOrdenesPage({ searchParams }: Props) {
 
   let query = supabase
     .from('orders')
-    .select('id, number, status, email, total, created_at', { count: 'exact' })
+    .select('id, number, status, email, total, payment_method, created_at', { count: 'exact' })
     .order('created_at', { ascending: false })
 
   if (q) query = query.or(`email.ilike.%${q}%,number.ilike.%${q}%`)
@@ -52,6 +52,7 @@ export default async function AdminOrdenesPage({ searchParams }: Props) {
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
   const STATUSES: { value: string; label: string }[] = [
+    { value: 'pago_pendiente',     label: 'Pago pendiente' },
     { value: 'nueva',              label: 'Nueva' },
     { value: 'en_preparacion',     label: 'En preparación' },
     { value: 'enviado',            label: 'Enviado' },
@@ -100,7 +101,7 @@ export default async function AdminOrdenesPage({ searchParams }: Props) {
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                {['Número', 'Email', 'Total', 'Estado', 'Fecha', 'Ver'].map((h) => (
+                {['Número', 'Email', 'Total', 'Estado', 'Pago', 'Fecha', 'Ver'].map((h) => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{h}</th>
                 ))}
               </tr>
@@ -112,6 +113,12 @@ export default async function AdminOrdenesPage({ searchParams }: Props) {
                   <td className="px-5 py-4 text-sm text-gray-600">{o.email}</td>
                   <td className="px-5 py-4 text-sm font-medium text-gray-900">${Number(o.total).toLocaleString('es-AR')}</td>
                   <td className="px-5 py-4"><OrderStatusBadge status={o.status as OrderStatus} /></td>
+                  <td className="px-5 py-4 text-xs text-gray-500 whitespace-nowrap">
+                    {o.payment_method === 'mercadopago' ? 'Mercado Pago'
+                      : o.payment_method === 'transferencia' ? 'Transferencia'
+                      : o.payment_method === 'efectivo' ? 'Efectivo'
+                      : 'Mercado Pago'}
+                  </td>
                   <td className="px-5 py-4 text-xs text-gray-400 whitespace-nowrap">
                     {new Date(o.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </td>
@@ -121,7 +128,7 @@ export default async function AdminOrdenesPage({ searchParams }: Props) {
                 </tr>
               ))}
               {!orders?.length && (
-                <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-gray-400">No hay órdenes.</td></tr>
+                <tr><td colSpan={7} className="px-5 py-10 text-center text-sm text-gray-400">No hay órdenes.</td></tr>
               )}
             </tbody>
           </table>

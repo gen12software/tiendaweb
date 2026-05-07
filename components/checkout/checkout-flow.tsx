@@ -6,10 +6,13 @@ import { ShippingMethod } from '@/lib/types/store'
 import ContactStep from './contact-step'
 import ShippingStep from './shipping-step'
 import PaymentStep from './payment-step'
+import PaymentMethodStep from './payment-method-step'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { isFreeShipping } from '@/lib/utils'
 import { BillingFormData } from '@/lib/schemas/checkout'
+import type { PaymentMethodConfig, PaymentMethodId } from '@/lib/payment-methods'
+import { createManualOrderAction } from '@/app/checkout/actions'
 
 export interface ContactData {
   full_name: string
@@ -32,11 +35,12 @@ interface Props {
   savedAddress: Record<string, string> | null
   freeShippingThreshold: number | null
   currencySymbol: string
+  paymentMethods: PaymentMethodConfig[]
 }
 
 const STEPS = ['Contacto', 'Envío', 'Pago']
 
-export default function CheckoutFlow({ user, shippingMethods, savedAddress, freeShippingThreshold, currencySymbol }: Props) {
+export default function CheckoutFlow({ user, shippingMethods, savedAddress, freeShippingThreshold, currencySymbol, paymentMethods }: Props) {
   const [step, setStep] = useState(0)
   const [contact, setContact] = useState<ContactData | null>(null)
   const [shipping, setShipping] = useState<ShippingData | null>(null)
@@ -49,37 +53,53 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
   const shippingTotal = isFreeShipping(freeShippingThreshold, subtotal) ? 0 : (selectedMethod?.price ?? 0)
   const total = subtotal + shippingTotal
 
-  async function handlePay() {
+  async function handleConfirm(paymentMethod: PaymentMethodId) {
     if (!contact || !shipping) return
     setLoading(true)
     try {
-      const mpRes = await fetch('/api/create-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      if (paymentMethod === 'mercadopago') {
+        const mpRes = await fetch('/api/create-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contact,
+            shipping,
+            billing_data: billing,
+            items,
+            subtotal,
+            shipping_total: shippingTotal,
+            total,
+            user_id: user?.id ?? null,
+          }),
+        })
+        const mpData = await mpRes.json()
+        if (!mpRes.ok) throw new Error(mpData.error ?? 'Error al iniciar el pago')
+
+        if (mpData.preference_id) {
+          sessionStorage.setItem('mp_preference_id', mpData.preference_id)
+        }
+        if (contact?.email) {
+          sessionStorage.setItem('checkout_email', contact.email)
+        }
+        clearCart()
+        window.location.href = mpData.init_point
+      } else {
+        const result = await createManualOrderAction({
           contact,
           shipping,
-          billing_data: billing,
+          billing_data: billing as Record<string, unknown>,
           items,
-          subtotal,
-          shipping_total: shippingTotal,
-          total,
           user_id: user?.id ?? null,
-        }),
-      })
-      const mpData = await mpRes.json()
-      if (!mpRes.ok) throw new Error(mpData.error ?? 'Error al iniciar el pago')
+          payment_method: paymentMethod,
+        })
 
-      if (mpData.preference_id) {
-        sessionStorage.setItem('mp_preference_id', mpData.preference_id)
+        if (!result.success) throw new Error(result.error ?? 'Error al crear el pedido')
+
+        clearCart()
+        router.push(`/checkout/confirmacion?orden=${result.publicToken}&metodo=${paymentMethod}`)
       }
-      if (contact?.email) {
-        sessionStorage.setItem('checkout_email', contact.email)
-      }
-      clearCart()
-      window.location.href = mpData.init_point
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error inesperado')
     } finally {
       setLoading(false)
     }
@@ -137,19 +157,28 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
           />
         )}
         {step === 2 && (
-          <PaymentStep
-            contact={contact!}
-            shipping={shipping!}
-            billing={billing}
-            selectedMethod={selectedMethod ?? null}
-            subtotal={subtotal}
-            shippingTotal={shippingTotal}
-            total={total}
-            currencySymbol={currencySymbol}
-            loading={loading}
-            onBack={() => setStep(1)}
-            onPay={handlePay}
-          />
+          paymentMethods.length > 1 ? (
+            <PaymentMethodStep
+              methods={paymentMethods}
+              loading={loading}
+              onBack={() => setStep(1)}
+              onConfirm={handleConfirm}
+            />
+          ) : (
+            <PaymentStep
+              contact={contact!}
+              shipping={shipping!}
+              billing={billing}
+              selectedMethod={selectedMethod ?? null}
+              subtotal={subtotal}
+              shippingTotal={shippingTotal}
+              total={total}
+              currencySymbol={currencySymbol}
+              loading={loading}
+              onBack={() => setStep(1)}
+              onPay={() => handleConfirm(paymentMethods[0]?.id ?? 'mercadopago')}
+            />
+          )
         )}
       </div>
 

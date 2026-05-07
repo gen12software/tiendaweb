@@ -20,6 +20,7 @@ const ALL_KEYS = [
   'header_bg_color', 'header_text_color', 'announcement_bg_color', 'announcement_text_color',
   'announcement_1', 'announcement_2', 'announcement_3', 'announcement_4', 'announcement_5',
   'announcement_6', 'announcement_7', 'announcement_8', 'announcement_9', 'announcement_10',
+  'payment_methods_enabled', 'transfer_cbu', 'transfer_alias', 'transfer_message',
 ]
 
 export async function updateSiteConfigAction(
@@ -33,6 +34,11 @@ export async function updateSiteConfigAction(
   const { data: profile } = await supabase
     .from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') return { error: 'No autorizado', success: '' }
+
+  const paymentMethodsValue = (formData.get('payment_methods_enabled') as string ?? '').trim()
+  if (formData.has('payment_methods_enabled') && !paymentMethodsValue) {
+    return { error: 'Debe haber al menos un método de pago habilitado', success: '' }
+  }
 
   const upserts = ALL_KEYS
     .filter((key) => formData.has(key))

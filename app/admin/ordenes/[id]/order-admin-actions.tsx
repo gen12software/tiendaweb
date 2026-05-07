@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { Upload, Send } from 'lucide-react'
 
 const STATUSES: { value: OrderStatus; label: string }[] = [
+  { value: 'pago_pendiente',     label: 'Pago pendiente' },
   { value: 'nueva',              label: 'Nueva' },
   { value: 'en_preparacion',     label: 'En preparación' },
   { value: 'enviado',            label: 'Enviado' },

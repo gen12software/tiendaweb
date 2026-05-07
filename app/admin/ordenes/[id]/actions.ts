@@ -46,7 +46,7 @@ export async function updateOrderAction(
   if (error) return { error: error.message }
 
   // Restaurar stock si se cancela una orden que estaba en estado pagado
-  const paidStatuses = ['nueva', 'en_preparacion', 'enviado', 'entregado']
+  const paidStatuses = ['pago_pendiente', 'nueva', 'en_preparacion', 'enviado', 'entregado']
   const wasPaid = currentOrder && paidStatuses.includes(currentOrder.status)
   if (data.status === 'cancelado' && wasPaid) {
     const { data: items } = await supabaseAdmin
