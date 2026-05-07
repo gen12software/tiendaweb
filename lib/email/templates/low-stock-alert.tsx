@@ -26,7 +26,7 @@ export function LowStockAlertEmail({
   return (
     <Html lang="es">
       <Head />
-      <Preview>⚠️ {items.length} producto{items.length !== 1 ? 's' : ''} con stock bajo — {siteName}</Preview>
+      <Preview>{`⚠️ ${items.length} producto${items.length !== 1 ? 's' : ''} con stock bajo — ${siteName}`}</Preview>
       <Body style={body}>
         <Container style={container}>
           <Section style={header}>

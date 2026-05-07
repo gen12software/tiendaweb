@@ -51,7 +51,7 @@ export function WeeklySummaryEmail({
   return (
     <Html lang="es">
       <Head />
-      <Preview>Resumen semanal — {totalOrders} órdenes — {fmt(totalRevenue)} — {siteName}</Preview>
+      <Preview>{`Resumen semanal — ${totalOrders} órdenes — ${fmt(totalRevenue)} — ${siteName}`}</Preview>
       <Body style={body}>
         <Container style={container}>
           <Section style={header}>
