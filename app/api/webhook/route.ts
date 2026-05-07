@@ -76,23 +76,38 @@ export async function POST(request: NextRequest) {
     if (flow === 'store') {
       if (status !== 'approved') return NextResponse.json({ ok: true })
 
-      const contact = metadata.contact as {
-        full_name: string; email: string; phone: string
-      } | undefined
-      const shipping = metadata.shipping as {
-        street: string; city: string; state: string
-        postal_code: string; country: string; shipping_method_id?: string
-      } | undefined
-      const items = metadata.items as Array<{
-        productId: string; variantId?: string; quantity: number
-        price: number; name: string; variantName?: string; image?: string
-      }> | undefined
+      // MP snake_casea las keys anidadas de metadata
+      const contactRaw = metadata.contact as Record<string, unknown> | undefined
+      const contact = contactRaw ? {
+        full_name: (contactRaw.full_name) as string,
+        email: (contactRaw.email) as string,
+        phone: (contactRaw.phone) as string,
+      } : undefined
+      const shippingRaw = metadata.shipping as Record<string, unknown> | undefined
+      const shipping = shippingRaw ? {
+        street: (shippingRaw.street) as string,
+        city: (shippingRaw.city) as string,
+        state: (shippingRaw.state) as string,
+        postal_code: (shippingRaw.postal_code) as string,
+        country: (shippingRaw.country) as string,
+        shipping_method_id: (shippingRaw.shipping_method_id) as string | undefined,
+      } : undefined
+      // MP convierte camelCase → snake_case en metadata al almacenar
+      const rawItems = metadata.items as Array<Record<string, unknown>> | undefined
+      const items = rawItems?.map((i) => ({
+        productId: (i.product_id ?? i.productId) as string,
+        variantId: (i.variant_id ?? i.variantId) as string | undefined,
+        quantity: Number(i.quantity),
+        name: (i.name) as string,
+        variantName: (i.variant_name ?? i.variantName) as string | undefined,
+        image: (i.image) as string | undefined,
+      }))
       const shippingTotal = Number(metadata.shipping_total)
       const orderUserId = (metadata.user_id as string | undefined) ?? null
       const billingData = (metadata.billing_data as Record<string, unknown> | undefined) ?? { same_as_shipping: true }
 
       if (!contact || !items?.length || !shipping) {
-        console.error('Webhook tienda: metadata incompleta', { paymentId })
+        console.error('Webhook tienda: metadata incompleta', { paymentId, contact: !!contact, items: items?.length, shipping: !!shipping })
         return NextResponse.json({ ok: true })
       }
 
