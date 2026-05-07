@@ -38,6 +38,7 @@ interface OrderSummary {
 export default function ConfirmacionPage() {
   const searchParams = useSearchParams()
   const preferenceId = searchParams.get('preference_id')
+  const paymentId = searchParams.get('payment_id')
   const mpStatus = searchParams.get('status')
 
   const [order, setOrder] = useState<OrderSummary | null>(null)
@@ -49,11 +50,14 @@ export default function ConfirmacionPage() {
     if (!prefId) return
 
     const email = sessionStorage.getItem('checkout_email')
-    const emailParam = email ? `?email=${encodeURIComponent(email)}` : ''
+    const params = new URLSearchParams()
+    if (email) params.set('email', email)
+    if (paymentId) params.set('payment_id', paymentId)
+    const qs = params.toString() ? `?${params.toString()}` : ''
 
     let attempts = 0
     const poll = async () => {
-      const res = await fetch(`/api/orders/by-preference/${encodeURIComponent(prefId)}${emailParam}`)
+      const res = await fetch(`/api/orders/by-preference/${encodeURIComponent(prefId)}${qs}`)
       const data = await res.json()
       if (data.order) {
         setOrder(data.order)
@@ -66,7 +70,7 @@ export default function ConfirmacionPage() {
       }
     }
     poll()
-  }, [preferenceId])
+  }, [preferenceId, paymentId])
 
   const copyNumber = () => {
     if (!order) return

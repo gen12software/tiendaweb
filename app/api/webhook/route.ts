@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
     const preferenceId = (mpRaw.preference_id as string | undefined) ?? undefined
     const metadata = (mpPayment.metadata ?? {}) as Record<string, unknown>
     const flow = metadata.flow as string | undefined
+    console.log('[webhook] payment fetched', { paymentId, status, preferenceId, flow, metadataKeys: Object.keys(metadata) })
     const userId = metadata.user_id as string | undefined
     const planId = metadata.plan_id as string | undefined
 
