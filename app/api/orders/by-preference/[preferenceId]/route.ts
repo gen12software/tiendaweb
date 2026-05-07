@@ -12,13 +12,14 @@ export async function GET(
   const { preferenceId } = await params
   const email = req.nextUrl.searchParams.get('email')?.toLowerCase().trim()
 
-  const { data: payment } = await supabaseAdmin
+  const { data: payment, error: paymentError } = await supabaseAdmin
     .from('payments')
-    .select('order_id')
+    .select('order_id, mp_preference_id')
     .eq('mp_preference_id', preferenceId)
     .single()
 
   if (!payment?.order_id) {
+    console.error('[by-preference] payment not found', { preferenceId, paymentError })
     return NextResponse.json({ order: null }, { status: 404 })
   }
 
