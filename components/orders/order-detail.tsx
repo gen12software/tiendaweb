@@ -62,15 +62,31 @@ export default function OrderDetail({ order, currencySymbol = '$' }: Props) {
         </div>
       </div>
 
-      {/* Dirección */}
-      {address && (
-        <div className="border-t pt-3">
-          <p className="text-sm font-semibold mb-1">Dirección de envío</p>
+      {/* Datos del cliente */}
+      <div className="border-t pt-3 space-y-1">
+        <p className="text-sm font-semibold mb-1">Cliente</p>
+        {address?.full_name && <p className="text-sm">{address.full_name}</p>}
+        <p className="text-sm text-muted-foreground">{order.email}</p>
+        {address?.phone && <p className="text-sm text-muted-foreground">{address.phone}</p>}
+      </div>
+
+      {/* Envío */}
+      <div className="border-t pt-3 space-y-1">
+        <p className="text-sm font-semibold mb-1">Envío</p>
+        {(order as any).shipping_methods?.name ? (
           <p className="text-sm text-muted-foreground">
-            {address.street}, {address.city}, {address.state} {address.postal_code}, {address.country}
+            {(order as any).shipping_methods.name}
+            {(order as any).shipping_methods.estimated_days ? ` · ${(order as any).shipping_methods.estimated_days} días hábiles` : ''}
           </p>
-        </div>
-      )}
+        ) : order.shipping_total === 0 ? (
+          <p className="text-sm text-muted-foreground">Gratis</p>
+        ) : null}
+        {address && (
+          <p className="text-sm text-muted-foreground">
+            {[address.street, address.city, address.state, address.postal_code, address.country].filter(Boolean).join(', ')}
+          </p>
+        )}
+      </div>
 
       {/* Facturación */}
       {order.billing_data && (

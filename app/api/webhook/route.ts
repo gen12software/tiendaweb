@@ -158,6 +158,8 @@ export async function POST(request: NextRequest) {
           shipping_address: shippingAddress,
           shipping_method_id: shipping.shipping_method_id || null,
           billing_data: billingData,
+          mp_preference_id: preferenceId ?? null,
+          mp_payment_id: String(paymentId),
         })
         .select('id, number, public_token')
         .single()
