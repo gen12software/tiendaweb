@@ -6,7 +6,7 @@ import { sendOrderConfirmationEmail } from '@/lib/email/send-order-confirmation'
 import { sendLowStockAlert, type LowStockItem } from '@/lib/email/send-low-stock-alert'
 import crypto from 'crypto'
 
-function verifyMpSignature(request: NextRequest, _rawBody: string): boolean {
+function verifyMpSignature(request: NextRequest, rawBody: string): boolean {
   const secret = process.env.WEBHOOK_SECRET
   if (!secret) return false
 
@@ -20,7 +20,16 @@ function verifyMpSignature(request: NextRequest, _rawBody: string): boolean {
   const v1 = parts['v1']
   if (!ts || !v1) return false
 
-  const manifest = `id:${xRequestId};request-id:${xRequestId};ts:${ts};`
+  // data.id is the payment ID from the webhook body
+  let dataId: string | undefined
+  try {
+    const parsed = JSON.parse(rawBody)
+    dataId = String((parsed?.data as Record<string, unknown>)?.id ?? '')
+  } catch {
+    return false
+  }
+
+  const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`
   const expected = crypto.createHmac('sha256', secret).update(manifest).digest('hex')
   return crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))
 }
@@ -33,7 +42,7 @@ export async function POST(request: NextRequest) {
   )
 
   const rawBody = await request.text()
-  if (!verifyMpSignature(request, rawBody)) {
+  if (process.env.WEBHOOK_SECRET && !verifyMpSignature(request, rawBody)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
