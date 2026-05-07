@@ -2,17 +2,11 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ContactData } from './checkout-flow'
-
-const schema = z.object({
-  full_name: z.string().min(2, 'Nombre requerido'),
-  email: z.string().email('Email inválido'),
-  phone: z.string().min(6, 'Teléfono requerido'),
-})
+import { contactSchema as schema } from '@/lib/schemas/checkout'
 
 interface Props {
   user: { id: string; email: string } | null

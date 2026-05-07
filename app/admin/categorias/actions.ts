@@ -3,8 +3,18 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
-export async function toggleCategoryAction(id: string, isActive: boolean) {
+async function assertAdmin() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+  const { data: profile } = await supabase
+    .from('profiles').select('role').eq('id', user.id).single()
+  return profile?.role === 'admin' ? supabase : null
+}
+
+export async function toggleCategoryAction(id: string, isActive: boolean) {
+  const supabase = await assertAdmin()
+  if (!supabase) return
   await supabase.from('categories').update({ is_active: isActive }).eq('id', id)
   revalidatePath('/admin/categorias')
 }
@@ -13,9 +23,8 @@ export async function saveCategoryAction(
   _prevState: { error: string; success: string },
   formData: FormData
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'No autorizado', success: '' }
+  const supabase = await assertAdmin()
+  if (!supabase) return { error: 'No autorizado', success: '' }
 
   const id = formData.get('id') as string | null
   const name = (formData.get('name') as string).trim()
@@ -24,7 +33,6 @@ export async function saveCategoryAction(
 
   if (!name) return { error: 'Nombre requerido', success: '' }
 
-  // El slug se genera del nombre solo en creación
   const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 
   if (id) {

@@ -7,7 +7,8 @@ import Footer from '@/components/layout/footer'
 import ConditionalShell from '@/components/layout/conditional-shell'
 import WhatsAppButton from '@/components/shared/whatsapp-button'
 import { Toaster } from '@/components/ui/sonner'
-import CartProvider from '@/components/cart/cart-provider'
+import CartProvider from '@/components/cart/cart-context'
+import CartDrawer from '@/components/cart/cart-drawer'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -72,6 +73,7 @@ export default async function RootLayout({
       )}
       <body className="min-h-full flex flex-col">
         <CartProvider>
+          <CartDrawer />
           <ConditionalShell
             header={<Header config={config} />}
             footer={<Footer config={config} />}

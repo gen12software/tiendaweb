@@ -16,7 +16,11 @@ export async function GET(request: NextRequest) {
       // email_confirmed_at se establece en este momento, por lo que aún no
       // estaba confirmado antes de este intercambio.
       const fullName = (user.user_metadata?.full_name as string | undefined) ?? ''
-      sendWelcomeEmail(user.email!, fullName)
+      try {
+        await sendWelcomeEmail(user.email!, fullName)
+      } catch (err) {
+        console.error('[email] welcome email failed', { email: user.email, err })
+      }
 
       return NextResponse.redirect(`${origin}/cuenta/ordenes`)
     }

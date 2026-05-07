@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { MercadoPagoConfig, Preference } from 'mercadopago'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { CartItem } from '@/lib/types/store'
 
 export async function POST(request: NextRequest) {
@@ -11,20 +12,57 @@ export async function POST(request: NextRequest) {
 
   // ── Flujo tienda: contact + shipping + items ──
   if (body?.contact) {
-    const { contact, shipping, items, subtotal, shipping_total, total, user_id } = body as {
+    const { contact, shipping, items, user_id } = body as {
       contact: { full_name: string; email: string; phone: string }
       shipping: { street: string; city: string; state: string; postal_code: string; country: string; shipping_method_id?: string }
       items: CartItem[]
-      subtotal: number
-      shipping_total: number
-      total: number
       user_id: string | null
     }
 
-    const mpItems = items.map((item) => ({
+    if (!items?.length) {
+      return NextResponse.json({ error: 'Carrito vacío' }, { status: 400 })
+    }
+
+    // Calcular precios desde la DB — nunca confiar en los precios del cliente
+    const supabaseAdmin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const productIds = items.map((i) => i.productId)
+    const variantIds = items.filter((i) => i.variantId).map((i) => i.variantId!)
+
+    const [{ data: productRows }, { data: variantRows }, { data: shippingMethod }] = await Promise.all([
+      supabaseAdmin.from('products').select('id, price, name').in('id', productIds),
+      variantIds.length
+        ? supabaseAdmin.from('product_variants').select('id, price_modifier').in('id', variantIds)
+        : Promise.resolve({ data: [] }),
+      shipping.shipping_method_id
+        ? supabaseAdmin.from('shipping_methods').select('price').eq('id', shipping.shipping_method_id).single()
+        : Promise.resolve({ data: null }),
+    ])
+
+    const productMap = new Map((productRows ?? []).map((p) => [p.id, { price: p.price as number, name: p.name as string }]))
+    const variantMap = new Map((variantRows ?? []).map((v) => [v.id, v.price_modifier as number]))
+
+    // Calcular totales server-side
+    let subtotal = 0
+    const verifiedItems = items.map((item) => {
+      const product = productMap.get(item.productId)
+      const basePrice = product?.price ?? 0
+      const modifier = item.variantId ? (variantMap.get(item.variantId) ?? 0) : 0
+      const unitPrice = basePrice + modifier
+      subtotal += unitPrice * item.quantity
+      return { ...item, price: unitPrice, name: product?.name ?? item.name }
+    })
+
+    const shippingTotal = shippingMethod?.price ?? 0
+    const total = subtotal + shippingTotal
+
+    const mpItems = verifiedItems.map((item) => ({
       id: item.productId,
       title: item.variantName ? `${item.name} - ${item.variantName}` : item.name,
-      unit_price: Number(item.price),
+      unit_price: item.price,
       quantity: Number(item.quantity),
       currency_id: 'ARS',
     }))
@@ -44,9 +82,17 @@ export async function POST(request: NextRequest) {
           flow: 'store',
           contact,
           shipping,
-          items,
+          // Solo IDs y cantidades — precios se recalculan en el webhook desde la DB
+          items: verifiedItems.map((i) => ({
+            productId: i.productId,
+            variantId: i.variantId ?? null,
+            quantity: i.quantity,
+            name: i.name,
+            variantName: i.variantName ?? null,
+            image: i.image ?? null,
+          })),
           subtotal,
-          shipping_total,
+          shipping_total: shippingTotal,
           total,
           user_id: user_id ?? null,
         },

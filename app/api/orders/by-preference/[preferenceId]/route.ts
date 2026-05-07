@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ preferenceId: string }> }
 ) {
   const supabaseAdmin = createClient(
@@ -10,6 +10,11 @@ export async function GET(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
   const { preferenceId } = await params
+  const email = req.nextUrl.searchParams.get('email')?.toLowerCase().trim()
+
+  if (!email) {
+    return NextResponse.json({ order: null }, { status: 404 })
+  }
 
   const { data: payment } = await supabaseAdmin
     .from('payments')
@@ -25,6 +30,7 @@ export async function GET(
     .from('orders')
     .select('id, number, status, email, total, public_token')
     .eq('id', payment.order_id)
+    .eq('email', email)
     .single()
 
   return NextResponse.json({ order: order ?? null })

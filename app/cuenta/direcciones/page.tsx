@@ -17,7 +17,7 @@ export default async function DireccionesPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold">Mis direcciones</h1>
-      <AddressManager addresses={addresses ?? []} userId={user!.id} />
+      <AddressManager addresses={addresses ?? []} />
     </div>
   )
 }

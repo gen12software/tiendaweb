@@ -34,8 +34,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, ...summary })
   } catch (err) {
     console.error('[cron/expiration-reminders] Error crítico:', err)
-    // Responder 200 igual para que Vercel no marque el cron como fallido
-    // por errores en el procesamiento interno
-    return NextResponse.json({ ok: false, error: 'Internal error' }, { status: 200 })
+    return NextResponse.json({ ok: false, error: 'Internal error' }, { status: 500 })
   }
 }

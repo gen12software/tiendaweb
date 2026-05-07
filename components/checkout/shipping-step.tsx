@@ -2,21 +2,13 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ShippingMethod } from '@/lib/types/store'
 import { ShippingData } from './checkout-flow'
-
-const schema = z.object({
-  street: z.string().min(3, 'Calle requerida'),
-  city: z.string().min(2, 'Ciudad requerida'),
-  state: z.string().min(2, 'Provincia requerida'),
-  postal_code: z.string().min(3, 'Código postal requerido'),
-  country: z.string().min(2, 'País requerido'),
-  shipping_method_id: z.string().optional(),
-})
+import { isFreeShipping } from '@/lib/utils'
+import { shippingSchema as schema } from '@/lib/schemas/checkout'
 
 interface Props {
   savedAddress: Record<string, string> | null
@@ -29,7 +21,7 @@ interface Props {
 }
 
 export default function ShippingStep({ savedAddress, shippingMethods, subtotal, freeShippingThreshold, currencySymbol, onBack, onNext }: Props) {
-  const freeShipping = freeShippingThreshold && subtotal >= freeShippingThreshold
+  const freeShipping = isFreeShipping(freeShippingThreshold, subtotal)
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm<ShippingData>({
     resolver: zodResolver(schema),

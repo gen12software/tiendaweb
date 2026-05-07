@@ -7,9 +7,9 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Plus, Trash2, Star } from 'lucide-react'
+import { addAddressAction, setDefaultAddressAction, removeAddressAction } from '@/app/cuenta/direcciones/actions'
 
 const schema = z.object({
   label: z.string().min(1, 'Requerido'),
@@ -31,13 +31,11 @@ interface Address {
 
 interface Props {
   addresses: Address[]
-  userId: string
 }
 
-export default function AddressManager({ addresses: initial, userId }: Props) {
+export default function AddressManager({ addresses: initial }: Props) {
   const [addresses, setAddresses] = useState(initial)
   const [showForm, setShowForm] = useState(false)
-  const supabase = createClient()
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -46,28 +44,35 @@ export default function AddressManager({ addresses: initial, userId }: Props) {
 
   async function onSubmit(data: FormData) {
     const { label, ...addressData } = data
-    const { data: newAddr, error } = await supabase
-      .from('addresses')
-      .insert({ user_id: userId, label, address: addressData, is_default: addresses.length === 0 })
-      .select('*')
-      .single()
+    const result = await addAddressAction({
+      label,
+      ...addressData,
+      is_default: addresses.length === 0,
+    })
 
-    if (error) { toast.error('Error al guardar'); return }
-    setAddresses((prev) => [...prev, newAddr])
+    if (result.error) { toast.error(result.error); return }
     toast.success('Dirección guardada')
     reset()
     setShowForm(false)
+    // Optimistic: la página se revalida via server action
+    setAddresses((prev) => [...prev, {
+      id: crypto.randomUUID(),
+      label,
+      address: addressData,
+      is_default: prev.length === 0,
+    }])
   }
 
   async function setDefault(id: string) {
-    await supabase.from('addresses').update({ is_default: false }).eq('user_id', userId)
-    await supabase.from('addresses').update({ is_default: true }).eq('id', id)
+    const result = await setDefaultAddressAction(id)
+    if (result.error) { toast.error(result.error); return }
     setAddresses((prev) => prev.map((a) => ({ ...a, is_default: a.id === id })))
     toast.success('Dirección predeterminada actualizada')
   }
 
   async function remove(id: string) {
-    await supabase.from('addresses').delete().eq('id', id)
+    const result = await removeAddressAction(id)
+    if (result.error) { toast.error(result.error); return }
     setAddresses((prev) => prev.filter((a) => a.id !== id))
     toast.success('Dirección eliminada')
   }

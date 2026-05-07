@@ -3,6 +3,27 @@ import { MercadoPagoConfig, Payment } from 'mercadopago'
 import { createClient } from '@supabase/supabase-js'
 import { sendPaymentConfirmationEmail } from '@/lib/email/send-payment-confirmation'
 import { sendOrderConfirmationEmail } from '@/lib/email/send-order-confirmation'
+import { sendLowStockAlert, type LowStockItem } from '@/lib/email/send-low-stock-alert'
+import crypto from 'crypto'
+
+function verifyMpSignature(request: NextRequest, _rawBody: string): boolean {
+  const secret = process.env.WEBHOOK_SECRET
+  if (!secret) return false
+
+  const xSignature = request.headers.get('x-signature')
+  const xRequestId = request.headers.get('x-request-id')
+  if (!xSignature || !xRequestId) return false
+
+  // MP signature format: ts=<timestamp>,v1=<hash>
+  const parts = Object.fromEntries(xSignature.split(',').map((p) => p.split('=')))
+  const ts = parts['ts']
+  const v1 = parts['v1']
+  if (!ts || !v1) return false
+
+  const manifest = `id:${xRequestId};request-id:${xRequestId};ts:${ts};`
+  const expected = crypto.createHmac('sha256', secret).update(manifest).digest('hex')
+  return crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))
+}
 
 export async function POST(request: NextRequest) {
   const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! })
@@ -10,23 +31,34 @@ export async function POST(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
-  try {
-    const body = await request.json().catch(() => null)
 
+  const rawBody = await request.text()
+  if (!verifyMpSignature(request, rawBody)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  let body: Record<string, unknown>
+  try {
+    body = JSON.parse(rawBody)
+  } catch {
+    return NextResponse.json({ ok: true }, { status: 200 })
+  }
+
+  try {
     if (!body || body.type !== 'payment') {
       return NextResponse.json({ ok: true }, { status: 200 })
     }
 
-    const paymentId = body.data?.id
+    const paymentId = (body.data as Record<string, unknown>)?.id
     if (!paymentId) {
       return NextResponse.json({ ok: true }, { status: 200 })
     }
 
-    const mpPayment = await new Payment(mp).get({ id: paymentId })
-    const mpRaw = mpPayment as any
-    const status = mpRaw.status as string | undefined
-    const preferenceId = mpRaw.preference_id as string | undefined
-    const metadata = mpRaw.metadata ?? {}
+    const mpPayment = await new Payment(mp).get({ id: String(paymentId) })
+    const mpRaw = mpPayment as unknown as Record<string, unknown>
+    const status = mpPayment.status
+    const preferenceId = (mpRaw.preference_id as string | undefined) ?? undefined
+    const metadata = (mpPayment.metadata ?? {}) as Record<string, unknown>
     const flow = metadata.flow as string | undefined
     const userId = metadata.user_id as string | undefined
     const planId = metadata.plan_id as string | undefined
@@ -35,18 +67,47 @@ export async function POST(request: NextRequest) {
     if (flow === 'store') {
       if (status !== 'approved') return NextResponse.json({ ok: true })
 
-      const contact = metadata.contact as any
-      const shipping = metadata.shipping as any
-      const items = metadata.items as any[]
-      const subtotal = Number(metadata.subtotal)
+      const contact = metadata.contact as {
+        full_name: string; email: string; phone: string
+      } | undefined
+      const shipping = metadata.shipping as {
+        street: string; city: string; state: string
+        postal_code: string; country: string; shipping_method_id?: string
+      } | undefined
+      const items = metadata.items as Array<{
+        productId: string; variantId?: string; quantity: number
+        price: number; name: string; variantName?: string; image?: string
+      }> | undefined
       const shippingTotal = Number(metadata.shipping_total)
-      const total = Number(metadata.total)
-      const orderUserId = metadata.user_id ?? null
+      const orderUserId = (metadata.user_id as string | undefined) ?? null
 
-      if (!contact || !items?.length) {
+      if (!contact || !items?.length || !shipping) {
         console.error('Webhook tienda: metadata incompleta', { paymentId })
         return NextResponse.json({ ok: true })
       }
+
+      // Recalcular precios desde la DB — ignorar los precios de metadata
+      const variantIds = items.filter((i) => i.variantId).map((i) => i.variantId!)
+      const productIds = items.map((i) => i.productId)
+
+      const [{ data: variantRows }, { data: productRows }] = await Promise.all([
+        supabaseAdmin.from('product_variants').select('id, price_modifier').in('id', variantIds),
+        supabaseAdmin.from('products').select('id, price').in('id', productIds),
+      ])
+
+      const variantMap = new Map((variantRows ?? []).map((v) => [v.id, v.price_modifier as number]))
+      const productMap = new Map((productRows ?? []).map((p) => [p.id, p.price as number]))
+
+      let recalcSubtotal = 0
+      const verifiedItems = items.map((item) => {
+        const basePrice = productMap.get(item.productId) ?? 0
+        const modifier = item.variantId ? (variantMap.get(item.variantId) ?? 0) : 0
+        const unitPrice = basePrice + modifier
+        recalcSubtotal += unitPrice * item.quantity
+        return { ...item, price: unitPrice }
+      })
+
+      const verifiedTotal = recalcSubtotal + shippingTotal
 
       const shippingAddress = {
         full_name: contact.full_name,
@@ -66,9 +127,9 @@ export async function POST(request: NextRequest) {
           status: 'nueva',
           email: contact.email,
           user_id: orderUserId,
-          subtotal,
+          subtotal: recalcSubtotal,
           shipping_total: shippingTotal,
-          total,
+          total: verifiedTotal,
           shipping_address: shippingAddress,
           shipping_method_id: shipping.shipping_method_id || null,
         })
@@ -81,7 +142,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Crear order_items y descontar stock
-      const orderItems = items.map((item: any) => ({
+      const orderItems = verifiedItems.map((item) => ({
         order_id: order.id,
         product_id: item.productId,
         variant_id: item.variantId ?? null,
@@ -93,12 +154,43 @@ export async function POST(request: NextRequest) {
 
       await supabaseAdmin.from('order_items').insert(orderItems)
 
-      for (const item of items) {
+      const decrementedVariantIds: string[] = []
+      for (const item of verifiedItems) {
         if (item.variantId) {
-          await supabaseAdmin.rpc('decrement_variant_stock', {
+          const { error: stockError } = await supabaseAdmin.rpc('decrement_variant_stock', {
             p_variant_id: item.variantId,
             p_quantity: item.quantity,
           })
+          if (stockError) {
+            console.error('Webhook: error descontando stock', { variantId: item.variantId, error: stockError })
+          } else {
+            decrementedVariantIds.push(item.variantId)
+          }
+        }
+      }
+
+      // Aviso de stock bajo si alguna variante quedó por debajo del umbral
+      if (decrementedVariantIds.length > 0) {
+        const threshold = 5 // default; se podría leer de site_config si se quiere dinámico
+        const { data: lowStockVariants } = await supabaseAdmin
+          .from('product_variants')
+          .select('id, sku, stock, products(name)')
+          .in('id', decrementedVariantIds)
+          .lte('stock', threshold)
+
+        if (lowStockVariants && lowStockVariants.length > 0) {
+          const alertItems: LowStockItem[] = lowStockVariants.map((v) => {
+            const product = (Array.isArray(v.products) ? v.products[0] : v.products) as { name: string } | null
+            return {
+              variantId: v.id,
+              productName: product?.name ?? 'Producto',
+              sku: v.sku ?? undefined,
+              stock: v.stock,
+            }
+          })
+          sendLowStockAlert(supabaseAdmin, alertItems, threshold).catch((err) =>
+            console.error('[email] low stock alert failed', err),
+          )
         }
       }
 
@@ -106,7 +198,7 @@ export async function POST(request: NextRequest) {
       await supabaseAdmin.from('payments').insert({
         order_id: order.id,
         user_id: orderUserId,
-        amount: total,
+        amount: verifiedTotal,
         status: 'approved',
         mp_payment_id: String(paymentId),
         mp_preference_id: preferenceId ?? null,
@@ -115,10 +207,10 @@ export async function POST(request: NextRequest) {
       // Email de confirmación
       const addrStr = [shipping.street, shipping.city, shipping.state, shipping.postal_code]
         .filter(Boolean).join(', ')
-      const emailItems = items.map((item: any) => ({
+      const emailItems = verifiedItems.map((item) => ({
         name: item.variantName ? `${item.name} - ${item.variantName}` : item.name,
         quantity: item.quantity,
-        unit_price: Number(item.price),
+        unit_price: item.price,
       }))
       try {
         await sendOrderConfirmationEmail({
@@ -128,7 +220,7 @@ export async function POST(request: NextRequest) {
           orderId: order.id,
           publicToken: order.public_token,
           items: emailItems,
-          total,
+          total: verifiedTotal,
           shippingTotal,
           shippingAddress: addrStr,
         })
@@ -176,14 +268,20 @@ export async function POST(request: NextRequest) {
           const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId)
 
           if (authUser?.user?.email) {
-            sendPaymentConfirmationEmail(
-              authUser.user.email,
-              profile?.full_name ?? '',
-              plan.name,
-              Number(plan.price),
-              expiresAt,
-              String(paymentId),
-            )
+            try {
+              await sendPaymentConfirmationEmail(
+                authUser.user.email,
+                profile?.full_name ?? '',
+                plan.name,
+                Number(plan.price),
+                expiresAt,
+                String(paymentId),
+              )
+            } catch (emailErr) {
+              console.error('[email] confirmación suscripción falló', { userId, paymentId, email: authUser.user.email, err: emailErr })
+            }
+          } else {
+            console.error('[email] no se pudo obtener email para confirmación de suscripción', { userId, paymentId })
           }
         }
       }

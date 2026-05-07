@@ -1,7 +1,7 @@
 import { render } from '@react-email/components'
 import { createClient } from '@supabase/supabase-js'
 import { resend, FROM_EMAIL } from './client'
-import { OrderConfirmationEmail } from './templates/order-confirmation'
+import { OrderCancelledEmail } from './templates/order-cancelled'
 import { getSiteConfig } from '@/lib/site-config'
 
 interface OrderItem {
@@ -10,72 +10,65 @@ interface OrderItem {
   unit_price: number
 }
 
-interface SendOrderConfirmationParams {
-  email: string
-  fullName: string
-  orderNumber: string
+interface SendOrderCancelledParams {
   orderId: string
-  publicToken: string
+  orderNumber: string
+  buyerEmail: string
+  buyerName: string
   items: OrderItem[]
   total: number
-  shippingTotal: number
-  shippingAddress: string
+  wasPaid: boolean
 }
 
-export async function sendOrderConfirmationEmail(params: SendOrderConfirmationParams): Promise<void> {
+export async function sendOrderCancelledEmail(params: SendOrderCancelledParams): Promise<void> {
   try {
-    if (!resend) { console.warn('[sendOrderConfirmationEmail] Resend no disponible'); return }
+    if (!resend) { console.warn('[sendOrderCancelledEmail] Resend no disponible'); return }
 
-    // Deduplicación: no reenviar si el webhook reintenta
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
     )
     const todayDate = new Date().toISOString().slice(0, 10)
+
     const { data: alreadySent } = await supabaseAdmin
       .from('email_logs')
       .select('id')
       .eq('reference_id', params.orderId)
-      .eq('email_type', 'order_confirmation')
+      .eq('email_type', 'order_cancelled')
       .eq('sent_date', todayDate)
       .maybeSingle()
     if (alreadySent) return
 
     const config = await getSiteConfig()
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000').replace(/\/$/, '')
-    const orderUrl = `${appUrl}/mi-orden?token=${params.publicToken}&email=${encodeURIComponent(params.email)}`
 
     const html = await render(
-      OrderConfirmationEmail({
-        fullName: params.fullName || params.email,
+      OrderCancelledEmail({
+        fullName: params.buyerName || params.buyerEmail,
         siteName: config.site_name,
         orderNumber: params.orderNumber,
         items: params.items,
         total: params.total,
-        shippingTotal: params.shippingTotal,
-        shippingAddress: params.shippingAddress,
-        orderUrl,
-        appUrl,
+        wasPaid: params.wasPaid,
       }),
     )
 
     const { error } = await resend.emails.send({
       from: `${config.site_name} <${FROM_EMAIL}>`,
-      to: params.email,
-      subject: `Pedido ${params.orderNumber} confirmado — ${config.site_name}`,
+      to: params.buyerEmail,
+      subject: `Tu pedido ${params.orderNumber} fue cancelado`,
       html,
     })
 
     if (error) {
-      console.error('[sendOrderConfirmationEmail] Resend error:', error)
+      console.error('[sendOrderCancelledEmail] Resend error:', { orderId: params.orderId, error })
     } else {
       await supabaseAdmin.from('email_logs').insert({
         reference_id: params.orderId,
-        email_type: 'order_confirmation',
+        email_type: 'order_cancelled',
         sent_date: todayDate,
       })
     }
   } catch (err) {
-    console.error('[sendOrderConfirmationEmail] Error inesperado:', err)
+    console.error('[sendOrderCancelledEmail] Error inesperado:', { orderId: params.orderId, err })
   }
 }

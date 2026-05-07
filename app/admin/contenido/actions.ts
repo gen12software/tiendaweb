@@ -35,7 +35,7 @@ export async function createContentAction(_prevState: { error: string }, formDat
   const { error } = await supabase.from('content').insert(data)
   if (error) return { error: 'Error al crear el contenido' }
 
-  revalidatePath('/dashboard/contenido')
+  revalidatePath('/admin/contenido')
   revalidatePath('/admin/contenido')
   redirect('/admin/contenido')
 }
@@ -51,7 +51,7 @@ export async function updateContentAction(_prevState: { error: string }, formDat
   const { error } = await supabase.from('content').update(data).eq('id', id)
   if (error) return { error: 'Error al actualizar el contenido' }
 
-  revalidatePath('/dashboard/contenido')
+  revalidatePath('/admin/contenido')
   revalidatePath('/admin/contenido')
   redirect('/admin/contenido')
 }
@@ -65,7 +65,7 @@ export async function toggleContentAction(id: string, currentActive: boolean) {
 
   if (error) return { error: 'Error al actualizar el estado' }
 
-  revalidatePath('/dashboard/contenido')
+  revalidatePath('/admin/contenido')
   revalidatePath('/admin/contenido')
   return { error: '' }
 }

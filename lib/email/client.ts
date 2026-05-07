@@ -1,7 +1,9 @@
 import { Resend } from 'resend'
 
 if (!process.env.RESEND_API_KEY) {
-  console.warn('[email] RESEND_API_KEY no configurada — los emails no se enviarán')
+  console.error('[email] RESEND_API_KEY no configurada — los emails NO se enviarán')
+} else if (process.env.RESEND_API_KEY.startsWith('re_test_')) {
+  console.warn('[email] RESEND_API_KEY es una test key — solo se enviarán emails a la dirección verificada de la cuenta Resend')
 }
 
 export const resend = process.env.RESEND_API_KEY

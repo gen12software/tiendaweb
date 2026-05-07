@@ -8,6 +8,7 @@ import ShippingStep from './shipping-step'
 import PaymentStep from './payment-step'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { isFreeShipping } from '@/lib/utils'
 
 export interface ContactData {
   full_name: string
@@ -43,7 +44,7 @@ export default function CheckoutFlow({ user, shippingMethods, savedAddress, free
   const router = useRouter()
 
   const selectedMethod = shippingMethods.find((m) => m.id === shipping?.shipping_method_id)
-  const shippingTotal = freeShippingThreshold && subtotal >= freeShippingThreshold ? 0 : (selectedMethod?.price ?? 0)
+  const shippingTotal = isFreeShipping(freeShippingThreshold, subtotal) ? 0 : (selectedMethod?.price ?? 0)
   const total = subtotal + shippingTotal
 
   async function handlePay() {
