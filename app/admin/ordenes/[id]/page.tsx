@@ -27,7 +27,9 @@ export default async function AdminOrdenDetailPage({ params }: Props) {
     .from('orders')
     .select(`
       id, number, status, email, subtotal, shipping_total, total, notes,
-      admin_notes, tracking_number, shipping_address, billing_data, invoice_url, payment_method, created_at, updated_at,
+      admin_notes, tracking_number, shipping_address, billing_data, invoice_url, payment_method,
+      cancellation_reason, cancellation_requested_at,
+      created_at, updated_at,
       shipping_methods(id, name, price, estimated_days),
       order_items(id, quantity, unit_price, total_price, snapshot)
     `)
@@ -48,6 +50,22 @@ export default async function AdminOrdenDetailPage({ params }: Props) {
           <OrderDetail order={order as any} currencySymbol="$" />
           <OrderAdminActions order={order as any} />
         </div>
+
+        {(order as any).cancellation_reason && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 space-y-2">
+            <h2 className="text-sm font-semibold text-amber-800">Solicitud de arrepentimiento</h2>
+            <p className="text-sm text-amber-700">
+              <span className="font-medium">Fecha:</span>{' '}
+              {new Date((order as any).cancellation_requested_at).toLocaleString('es-AR', {
+                day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+              })}
+            </p>
+            <p className="text-sm text-amber-700">
+              <span className="font-medium">Motivo del cliente:</span>{' '}
+              {(order as any).cancellation_reason}
+            </p>
+          </div>
+        )}
       </div>
     </main>
   )

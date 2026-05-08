@@ -34,6 +34,7 @@ export interface Product {
   is_featured: boolean
   sort_order: number
   stock: number
+  low_stock_threshold: number | null
   created_at: string
   categories?: Pick<Category, 'id' | 'name' | 'slug'> | null
   product_images?: ProductImage[]
@@ -91,6 +92,7 @@ export type OrderStatus =
   | 'enviado'
   | 'listo_para_retirar'
   | 'entregado'
+  | 'arrepentimiento_solicitado'
   | 'cancelado'
 
 export interface Order {
@@ -112,6 +114,8 @@ export interface Order {
   public_token: string
   created_at: string
   updated_at: string
+  cancellation_reason: string | null
+  cancellation_requested_at: string | null
   order_items?: OrderItem[]
   shipping_methods?: ShippingMethod | null
 }

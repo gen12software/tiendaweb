@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { sendPaymentConfirmationEmail } from '@/lib/email/send-payment-confirmation'
 import { sendOrderConfirmationEmail } from '@/lib/email/send-order-confirmation'
 import { sendLowStockAlert, type LowStockItem } from '@/lib/email/send-low-stock-alert'
+
 import crypto from 'crypto'
 
 function verifyMpSignature(request: NextRequest, rawBody: string): boolean {
@@ -199,18 +200,21 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Aviso de stock bajo si alguna variante quedó por debajo del umbral
+      // Alerta de stock bajo usando únicamente el umbral definido en cada producto
       if (decrementedVariantIds.length > 0) {
-        const threshold = 5 // default; se podría leer de site_config si se quiere dinámico
-        const { data: lowStockVariants } = await supabaseAdmin
+        const { data: variantsAfter } = await supabaseAdmin
           .from('product_variants')
-          .select('id, sku, stock, products(name)')
+          .select('id, sku, stock, products(name, low_stock_threshold)')
           .in('id', decrementedVariantIds)
-          .lte('stock', threshold)
 
-        if (lowStockVariants && lowStockVariants.length > 0) {
+        const lowStockVariants = (variantsAfter ?? []).filter((v) => {
+          const product = (Array.isArray(v.products) ? v.products[0] : v.products) as { name: string; low_stock_threshold: number | null } | null
+          return product?.low_stock_threshold != null && v.stock <= product.low_stock_threshold
+        })
+
+        if (lowStockVariants.length > 0) {
           const alertItems: LowStockItem[] = lowStockVariants.map((v) => {
-            const product = (Array.isArray(v.products) ? v.products[0] : v.products) as { name: string } | null
+            const product = (Array.isArray(v.products) ? v.products[0] : v.products) as { name: string; low_stock_threshold: number | null } | null
             return {
               variantId: v.id,
               productName: product?.name ?? 'Producto',
@@ -218,7 +222,7 @@ export async function POST(request: NextRequest) {
               stock: v.stock,
             }
           })
-          sendLowStockAlert(supabaseAdmin, alertItems, threshold).catch((err) =>
+          sendLowStockAlert(supabaseAdmin, alertItems, 0).catch((err) =>
             console.error('[email] low stock alert failed', err),
           )
         }

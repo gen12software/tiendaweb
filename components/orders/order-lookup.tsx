@@ -57,7 +57,7 @@ export default function OrderLookup() {
         <p className="text-sm text-destructive text-center">No encontramos una orden con esos datos.</p>
       )}
 
-      {order && <OrderDetail order={order} />}
+      {order && <OrderDetail order={order} showCancellation publicToken={order.public_token} />}
     </div>
   )
 }

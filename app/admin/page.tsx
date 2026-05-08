@@ -14,12 +14,13 @@ const PERIODOS = [
 ]
 
 const STATUS_ORDER: { value: OrderStatus; label: string; color: string }[] = [
-  { value: 'nueva',              label: 'Nuevas',             color: 'bg-blue-50 text-blue-700' },
-  { value: 'en_preparacion',     label: 'En preparación',     color: 'bg-yellow-50 text-yellow-700' },
-  { value: 'enviado',            label: 'Enviadas',           color: 'bg-purple-50 text-purple-700' },
-  { value: 'listo_para_retirar', label: 'Listo p/ retirar',   color: 'bg-orange-50 text-orange-700' },
-  { value: 'entregado',          label: 'Entregadas',         color: 'bg-green-50 text-green-700' },
-  { value: 'cancelado',          label: 'Canceladas',         color: 'bg-red-50 text-red-600' },
+  { value: 'nueva',                     label: 'Nuevas',             color: 'bg-blue-50 text-blue-700' },
+  { value: 'en_preparacion',            label: 'En preparación',     color: 'bg-yellow-50 text-yellow-700' },
+  { value: 'enviado',                   label: 'Enviadas',           color: 'bg-purple-50 text-purple-700' },
+  { value: 'listo_para_retirar',        label: 'Listo p/ retirar',   color: 'bg-orange-50 text-orange-700' },
+  { value: 'entregado',                 label: 'Entregadas',         color: 'bg-green-50 text-green-700' },
+  { value: 'arrepentimiento_solicitado',label: 'Cancelac. solicit.',  color: 'bg-amber-50 text-amber-700' },
+  { value: 'cancelado',                 label: 'Canceladas',         color: 'bg-red-50 text-red-600' },
 ]
 
 interface Props { searchParams: Promise<{ periodo?: string }> }
@@ -37,7 +38,6 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
   )
   const { periodo = '7d' } = await searchParams
   const config = await getSiteConfig()
-  const lowStockThreshold = parseInt(config.low_stock_threshold ?? '5') || 5
 
   // Calcular fecha inicio del período
   const now = new Date()
@@ -84,13 +84,12 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
       .limit(8),
 
     supabaseAdmin.from('product_variants')
-      .select('id, name, stock, product_id, products(name)')
-      .lte('stock', lowStockThreshold)
+      .select('id, name, stock, product_id, products(name, low_stock_threshold)')
       .order('stock', { ascending: true })
-      .limit(10),
+      .limit(200),
 
     supabaseAdmin.from('products')
-      .select('id, name, stock, product_variants(stock)')
+      .select('id, name, stock, low_stock_threshold, product_variants(stock)')
       .eq('is_active', true)
       .order('stock', { ascending: true }),
   ])
@@ -101,8 +100,13 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
     if (variants.length > 0) return variants.reduce((s: number, v: any) => s + v.stock, 0)
     return p.stock ?? 0
   }
+  const lowStockVariantsFiltered = (lowStockVariants ?? []).filter((v: any) => {
+    const product = Array.isArray(v.products) ? v.products[0] : v.products
+    const threshold = product?.low_stock_threshold
+    return threshold != null && v.stock <= threshold
+  }).slice(0, 10)
   const lowStockProductsFiltered = (lowStockProducts ?? [])
-    .filter(p => effectiveStock(p) <= lowStockThreshold)
+    .filter(p => p.low_stock_threshold != null && effectiveStock(p) <= p.low_stock_threshold)
     .sort((a, b) => effectiveStock(a) - effectiveStock(b))
     .slice(0, 10)
 
@@ -170,11 +174,11 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
         </div>
 
         <div className="rounded-2xl bg-white border border-[#f0f0f0] p-6">
-          <p className="text-xs font-semibold text-[#999] uppercase tracking-widest">Stock bajo (≤{lowStockThreshold})</p>
+          <p className="text-xs font-semibold text-[#999] uppercase tracking-widest">Stock bajo</p>
           <p className={`mt-3 font-heading text-3xl font-bold tracking-tight ${
-            (lowStockVariants?.length ?? 0) + lowStockProductsFiltered.length > 0 ? 'text-orange-500' : 'text-[#111]'
+            lowStockVariantsFiltered.length + lowStockProductsFiltered.length > 0 ? 'text-orange-500' : 'text-[#111]'
           }`}>
-            {(lowStockVariants?.length ?? 0) + lowStockProductsFiltered.length}
+            {lowStockVariantsFiltered.length + lowStockProductsFiltered.length}
           </p>
           <p className="mt-1 text-xs text-[#aaa]">productos/variantes</p>
         </div>
@@ -183,7 +187,7 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
       {/* Órdenes por estado */}
       <div className="rounded-2xl bg-white border border-[#f0f0f0] p-6">
         <h2 className="font-semibold text-sm text-[#111] mb-4">Órdenes por estado · {PERIODOS.find(p => p.value === periodo)?.label}</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
           {countByStatus.map(s => (
             <Link key={s.value} href={`/admin/ordenes?status=${s.value}&periodo=${periodo}`}
               className={`rounded-xl p-4 text-center hover:opacity-80 transition-opacity ${s.color}`}>
@@ -242,7 +246,7 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
             <Link href="/admin/productos" className="text-xs text-[#888] hover:text-[#111] transition-colors">Ver todos →</Link>
           </div>
           <div className="overflow-hidden rounded-2xl bg-white border border-[#f0f0f0]">
-            {(lowStockVariants?.length ?? 0) + lowStockProductsFiltered.length === 0 ? (
+            {lowStockVariantsFiltered.length + lowStockProductsFiltered.length === 0 ? (
               <div className="px-4 py-8 text-center text-sm text-[#bbb]">
                 Todo el stock está bien ✓
               </div>
@@ -256,7 +260,7 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f5f5f4]">
-                  {lowStockVariants?.map(v => (
+                  {lowStockVariantsFiltered.map((v: any) => (
                     <tr key={v.id} className="hover:bg-[#fafaf9]">
                       <td className="px-4 py-3 text-sm text-[#333]">{(v.products as any)?.name ?? '—'}</td>
                       <td className="px-4 py-3 text-sm text-[#666]">{v.name}</td>

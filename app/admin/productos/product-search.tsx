@@ -6,10 +6,9 @@ import { Search } from 'lucide-react'
 
 interface Props {
   categories: { id: string; name: string }[]
-  threshold?: number
 }
 
-export default function ProductSearch({ categories, threshold = 5 }: Props) {
+export default function ProductSearch({ categories }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [, startTransition] = useTransition()
@@ -74,7 +73,7 @@ export default function ProductSearch({ categories, threshold = 5 }: Props) {
             : 'border-gray-300 text-gray-700 hover:border-orange-400 hover:text-orange-600'
         }`}
       >
-        ⚠️ Stock bajo (≤{threshold})
+        ⚠️ Stock bajo
       </button>
     </div>
   )

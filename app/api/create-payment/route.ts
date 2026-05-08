@@ -63,13 +63,20 @@ export async function POST(request: NextRequest) {
     const mpItems = verifiedItems.map((item) => ({
       id: item.productId,
       title: item.variantName ? `${item.name} - ${item.variantName}` : item.name,
-      unit_price: item.price,
+      unit_price: Math.round(item.price * 100) / 100,
       quantity: Number(item.quantity),
       currency_id: 'ARS',
     }))
 
-    const preference = await new Preference(mp).create({
-      body: {
+    if (mpItems.some((i) => i.unit_price <= 0)) {
+      return NextResponse.json({ error: 'Precio inválido en uno o más productos' }, { status: 400 })
+    }
+
+    console.log('[create-payment] mpItems', JSON.stringify(mpItems))
+    let preference
+    try {
+      preference = await new Preference(mp).create({
+        body: {
         items: mpItems,
         payer: { email: contact.email },
         back_urls: {
@@ -100,8 +107,17 @@ export async function POST(request: NextRequest) {
         },
       },
     })
+    } catch (mpErr) {
+      console.error('[create-payment] MP error', mpErr)
+      return NextResponse.json({ error: 'Error al crear la preferencia de pago' }, { status: 500 })
+    }
 
-    return NextResponse.json({ init_point: preference.init_point, preference_id: preference.id })
+    const isSandbox = process.env.MP_ACCESS_TOKEN?.startsWith('TEST-')
+    const redirectUrl = isSandbox
+      ? (preference.sandbox_init_point ?? preference.init_point)
+      : preference.init_point
+    console.log('[create-payment] preference created', preference.id, isSandbox ? '(sandbox → sandbox_init_point)' : '(prod → init_point)', redirectUrl)
+    return NextResponse.json({ init_point: redirectUrl, preference_id: preference.id })
   }
 
   // ── Flujo suscripciones: planId (original) ──
@@ -162,5 +178,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 
-  return NextResponse.json({ init_point: preference.init_point })
+  const isSandboxSub = process.env.MP_ACCESS_TOKEN?.startsWith('TEST-')
+  const redirectUrlSub = isSandboxSub
+    ? (preference.sandbox_init_point ?? preference.init_point)
+    : preference.init_point
+  return NextResponse.json({ init_point: redirectUrlSub })
 }

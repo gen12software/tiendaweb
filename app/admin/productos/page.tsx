@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Metadata } from 'next'
 import { Suspense } from 'react'
-import { getSiteConfig } from '@/lib/site-config'
+
 import ToggleProductButton from './toggle-product-button'
 import ProductSearch from './product-search'
 
@@ -19,16 +19,13 @@ export default async function AdminProductosPage({ searchParams }: Props) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') redirect('/cuenta/ordenes')
 
-  const [{ data: categories }, config] = await Promise.all([
+  const [{ data: categories }] = await Promise.all([
     supabase.from('categories').select('id, name').eq('is_active', true).order('name'),
-    getSiteConfig(),
   ])
-
-  const threshold = parseInt(config.low_stock_threshold ?? '5') || 5
 
   let query = supabase
     .from('products')
-    .select('id, name, slug, price, stock, is_active, is_featured, created_at, categories(id, name), product_variants(stock)')
+    .select('id, name, slug, price, stock, low_stock_threshold, is_active, is_featured, created_at, categories(id, name), product_variants(stock)')
 
   if (q?.trim()) query = query.ilike('name', `%${q.trim()}%`)
   if (cat) query = query.eq('category_id', cat)
@@ -48,9 +45,11 @@ export default async function AdminProductosPage({ searchParams }: Props) {
     return p.stock ?? 0
   }
 
-  // Filtro por stock bajo (client-side tras fetch)
   const filtered = stock === 'bajo'
-    ? (products ?? []).filter(p => effectiveStock(p) <= threshold)
+    ? (products ?? []).filter(p => {
+        const t = (p as any).low_stock_threshold
+        return t != null && effectiveStock(p) <= t
+      })
     : (products ?? [])
 
   return (
@@ -65,13 +64,13 @@ export default async function AdminProductosPage({ searchParams }: Props) {
         </div>
 
         <Suspense>
-          <ProductSearch categories={categories ?? []} threshold={threshold} />
+          <ProductSearch categories={categories ?? []} />
         </Suspense>
 
         {stock === 'bajo' && (
           <div className="flex items-center gap-2 text-sm text-orange-700 bg-orange-50 border border-orange-200 rounded-lg px-4 py-2.5">
             <span>⚠️</span>
-            <span>Mostrando productos con stock ≤ {threshold}. <Link href="/admin/productos" className="underline">Ver todos</Link></span>
+            <span>Mostrando productos con stock bajo según su umbral configurado. <Link href="/admin/productos" className="underline">Ver todos</Link></span>
           </div>
         )}
 
@@ -87,7 +86,7 @@ export default async function AdminProductosPage({ searchParams }: Props) {
             <tbody className="divide-y divide-gray-100">
               {filtered.map((p) => {
                 const eff = effectiveStock(p)
-                const isLow = eff <= threshold
+                const isLow = (p as any).low_stock_threshold != null && eff <= (p as any).low_stock_threshold
                 const isOut = eff === 0
                 return (
                   <tr key={p.id} className={`transition-colors ${

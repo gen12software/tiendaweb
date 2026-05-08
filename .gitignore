@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# internal dev tooling (not for client repo)
+.claude/
+openspec/
+CLAUDE.md
+AGENTS.md

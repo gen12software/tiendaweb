@@ -302,8 +302,6 @@ function SecTienda({ config }: { config: SiteConfig }) {
         <Field id="currency_locale" label="Locale de moneda" defaultValue={config.currency_locale} placeholder="es-AR" />
         <Field id="free_shipping_threshold" label="Envío gratis desde" type="number" defaultValue={config.free_shipping_threshold}
           hint="Dejar vacío para desactivar" />
-        <Field id="low_stock_threshold" label="Umbral de stock bajo" type="number" defaultValue={config.low_stock_threshold}
-          hint="Alerta en dashboard cuando stock ≤ este valor" />
       </Grid>
     </div>
   )

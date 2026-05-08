@@ -52,13 +52,14 @@ export default async function AdminOrdenesPage({ searchParams }: Props) {
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
   const STATUSES: { value: string; label: string }[] = [
-    { value: 'pago_pendiente',     label: 'Pago pendiente' },
-    { value: 'nueva',              label: 'Nueva' },
-    { value: 'en_preparacion',     label: 'En preparación' },
-    { value: 'enviado',            label: 'Enviado' },
-    { value: 'listo_para_retirar', label: 'Listo para retirar' },
-    { value: 'entregado',          label: 'Entregado' },
-    { value: 'cancelado',          label: 'Cancelado' },
+    { value: 'pago_pendiente',            label: 'Pago pendiente' },
+    { value: 'nueva',                     label: 'Nueva' },
+    { value: 'en_preparacion',            label: 'En preparación' },
+    { value: 'enviado',                   label: 'Enviado' },
+    { value: 'listo_para_retirar',        label: 'Listo para retirar' },
+    { value: 'entregado',                 label: 'Entregado' },
+    { value: 'arrepentimiento_solicitado',label: 'Cancelación solicitada' },
+    { value: 'cancelado',                 label: 'Cancelado' },
   ]
 
   return (

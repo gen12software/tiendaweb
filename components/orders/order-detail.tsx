@@ -1,12 +1,15 @@
 import { Order } from '@/lib/types/store'
 import OrderStatusBadge from './order-status-badge'
+import CancellationButton from './cancellation-button'
 
 interface Props {
   order: Order
   currencySymbol?: string
+  publicToken?: string
+  showCancellation?: boolean
 }
 
-export default function OrderDetail({ order, currencySymbol = '$' }: Props) {
+export default function OrderDetail({ order, currencySymbol = '$', publicToken, showCancellation = false }: Props) {
   const address = order.shipping_address
 
   return (
@@ -115,6 +118,12 @@ export default function OrderDetail({ order, currencySymbol = '$' }: Props) {
               {order.billing_data.phone && <p>{order.billing_data.phone}</p>}
             </div>
           )}
+        </div>
+      )}
+
+      {showCancellation && (
+        <div className="border-t pt-4">
+          <CancellationButton order={order} publicToken={publicToken} />
         </div>
       )}
     </div>

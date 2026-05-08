@@ -20,7 +20,9 @@ export async function GET(
     .from('orders')
     .select(`
       id, number, status, email, subtotal, shipping_total, total,
-      shipping_address, tracking_number, created_at, updated_at,
+      shipping_address, tracking_number, billing_data, payment_method,
+      public_token, cancellation_reason, cancellation_requested_at,
+      created_at, updated_at,
       shipping_methods(id, name, price, estimated_days),
       order_items(id, quantity, unit_price, total_price, snapshot)
     `)

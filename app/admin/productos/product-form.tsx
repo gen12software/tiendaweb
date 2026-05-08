@@ -26,6 +26,7 @@ interface Product {
   is_featured: boolean
   is_active: boolean
   sort_order: number
+  low_stock_threshold: number | null
   product_images: ProductImage[]
   product_variants: ProductVariant[]
 }
@@ -50,6 +51,7 @@ export default function ProductForm({ product, categories }: Props) {
   const [isActive, setIsActive] = useState(product?.is_active ?? true)
   const [sortOrder, setSortOrder] = useState(product?.sort_order?.toString() ?? '0')
   const [stock, setStock] = useState((product as any)?.stock?.toString() ?? '0')
+  const [lowStockThreshold, setLowStockThreshold] = useState(product?.low_stock_threshold?.toString() ?? '')
   const [imageUrls, setImageUrls] = useState<string[]>(
     product?.product_images?.sort((a, b) => a.sort_order - b.sort_order).map(i => i.url) ?? []
   )
@@ -95,6 +97,7 @@ export default function ProductForm({ product, categories }: Props) {
         is_active: isActive,
         sort_order: parseInt(sortOrder) || 0,
         stock: parseInt(stock) || 0,
+        low_stock_threshold: lowStockThreshold !== '' ? parseInt(lowStockThreshold) || null : null,
       }
 
       let productId = product?.id
@@ -203,14 +206,23 @@ export default function ProductForm({ product, categories }: Props) {
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Stock
-          {variants.length > 0 && <span className="ml-2 text-xs text-gray-400">(ignorado cuando hay variantes — cada variante tiene su propio stock)</span>}
-        </label>
-        <input type="number" min="0" value={stock} onChange={e => setStock(e.target.value)}
-          disabled={variants.length > 0}
-          className="w-40 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none disabled:opacity-40 disabled:bg-gray-50" />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Stock
+            {variants.length > 0 && <span className="ml-2 text-xs text-gray-400">(ignorado cuando hay variantes)</span>}
+          </label>
+          <input type="number" min="0" value={stock} onChange={e => setStock(e.target.value)}
+            disabled={variants.length > 0}
+            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none disabled:opacity-40 disabled:bg-gray-50" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Umbral de stock bajo</label>
+          <input type="number" min="0" value={lowStockThreshold} onChange={e => setLowStockThreshold(e.target.value)}
+            placeholder="Ej: 5"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none" />
+          <p className="mt-1 text-xs text-gray-400">Dejar vacío para no generar alertas de stock bajo</p>
+        </div>
       </div>
 
       {/* Variantes */}

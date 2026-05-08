@@ -27,16 +27,14 @@ export default function PaymentMethodStep({ methods, loading, onBack, onConfirm 
             key={method.id}
             type="button"
             onClick={() => setSelected(method.id)}
-            className={`w-full text-left rounded-xl border-2 p-4 transition-colors ${
-              selected === method.id
+            className={`w-full text-left rounded-xl border-2 p-4 transition-colors ${selected === method.id
                 ? 'border-primary bg-primary/5'
                 : 'border-border hover:border-muted-foreground/40'
-            }`}
+              }`}
           >
             <div className="flex items-center gap-3">
-              <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-colors ${
-                selected === method.id ? 'border-primary bg-primary' : 'border-muted-foreground/40'
-              }`}>
+              <div className={`w-4 h-4 rounded-full border-2 shrink-0 transition-colors ${selected === method.id ? 'border-primary bg-primary' : 'border-muted-foreground/40'
+                }`}>
                 {selected === method.id && (
                   <div className="w-full h-full rounded-full scale-50 bg-white" />
                 )}

@@ -18,7 +18,9 @@ export default async function OrdenDetallePage({ params }: Props) {
     .from('orders')
     .select(`
       id, number, status, email, subtotal, shipping_total, total,
-      shipping_address, tracking_number, created_at, updated_at,
+      shipping_address, tracking_number, billing_data, payment_method,
+      cancellation_reason, cancellation_requested_at,
+      created_at, updated_at,
       shipping_methods(id, name, price, estimated_days),
       order_items(id, quantity, unit_price, total_price, snapshot)
     `)
@@ -31,7 +33,7 @@ export default async function OrdenDetallePage({ params }: Props) {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold">Orden #{order.number}</h1>
-      <OrderDetail order={order as any} currencySymbol={config.currency_symbol} />
+      <OrderDetail order={order as any} currencySymbol={config.currency_symbol} showCancellation />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { CartItem } from '@/lib/types/store'
 import { sendOrderConfirmationEmail } from '@/lib/email/send-order-confirmation'
 import { sendLowStockAlert, type LowStockItem } from '@/lib/email/send-low-stock-alert'
 
+
 export interface ManualOrderInput {
   contact: { full_name: string; email: string; phone: string }
   shipping: {
@@ -132,21 +133,24 @@ export async function createManualOrderAction(input: ManualOrderInput): Promise<
     }
   }
 
-  // Alerta de stock bajo
+  // Alerta de stock bajo usando únicamente el umbral definido en cada producto
   if (decrementedVariantIds.length > 0) {
-    const threshold = 5
-    const { data: lowStockVariants } = await supabaseAdmin
+    const { data: variantsAfter } = await supabaseAdmin
       .from('product_variants')
-      .select('id, sku, stock, products(name)')
+      .select('id, sku, stock, products(name, low_stock_threshold)')
       .in('id', decrementedVariantIds)
-      .lte('stock', threshold)
 
-    if (lowStockVariants && lowStockVariants.length > 0) {
+    const lowStockVariants = (variantsAfter ?? []).filter((v) => {
+      const product = (Array.isArray(v.products) ? v.products[0] : v.products) as { name: string; low_stock_threshold: number | null } | null
+      return product?.low_stock_threshold != null && v.stock <= product.low_stock_threshold
+    })
+
+    if (lowStockVariants.length > 0) {
       const alertItems: LowStockItem[] = lowStockVariants.map((v) => {
-        const product = (Array.isArray(v.products) ? v.products[0] : v.products) as { name: string } | null
+        const product = (Array.isArray(v.products) ? v.products[0] : v.products) as { name: string; low_stock_threshold: number | null } | null
         return { variantId: v.id, productName: product?.name ?? 'Producto', sku: v.sku ?? undefined, stock: v.stock }
       })
-      sendLowStockAlert(supabaseAdmin, alertItems, threshold).catch((err) =>
+      sendLowStockAlert(supabaseAdmin, alertItems, 0).catch((err) =>
         console.error('[createManualOrderAction] low stock alert failed', err)
       )
     }

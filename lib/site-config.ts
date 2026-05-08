@@ -35,7 +35,7 @@ export interface SiteConfig {
   slogan: string
   terms_url: string
   privacy_url: string
-  low_stock_threshold: string
+
   about_title: string
   about_subtitle: string
   about_description: string
@@ -104,7 +104,7 @@ const DEFAULTS: SiteConfig = {
   slogan: '',
   terms_url: '/privacidad',
   privacy_url: '/privacidad',
-  low_stock_threshold: '5',
+
   about_title: 'Quiénes Somos',
   about_subtitle: '',
   about_description: '',
